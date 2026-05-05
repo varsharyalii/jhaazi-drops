@@ -37,6 +37,7 @@ function App() {
     { id: "item", label: "3 · item detail" },
     { id: "booking", label: "4 · booking confirmation" },
     { id: "follow", label: "5 · follow seller" },
+    { id: "myfollows", label: "6 · my follows" },
   ];
 
   return (
