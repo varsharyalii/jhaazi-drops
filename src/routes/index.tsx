@@ -1197,11 +1197,14 @@ function DropLanding({ go, followingSeller, setFollowingSeller }: { go: GoFn; fo
   const [filter, setFilter] = useState<"all" | "available" | "western" | "ethnic">("all");
   const visible = ITEMS.filter(i => filter === "all" ? true : filter === "available" ? i.status === "available" : i.cat === filter);
 
+  const available = ITEMS.filter(i => i.status === "available").length;
+  const total = ITEMS.length;
+
   return (
     <Wrap>
       <div style={{ marginBottom: 8 }}><BackBtn onClick={() => go("feed")} /></div>
       <Screen>
-        <div style={{ padding: "20px 16px 16px", borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
+        <div style={{ padding: "20px 16px 14px", borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
             <div style={{ width: 38, height: 38, borderRadius: "50%", background: "#E1F5EE", color: "#085041", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 500 }}>JP</div>
             <div style={{ flex: 1 }}>
@@ -1209,24 +1212,41 @@ function DropLanding({ go, followingSeller, setFollowingSeller }: { go: GoFn; fo
               <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", margin: 0 }}>214 followers</p>
             </div>
             <button onClick={() => setFollowingSeller(!followingSeller)} style={{
-              fontSize: 12, padding: "6px 14px", borderRadius: 20,
+              fontSize: 12, padding: "6px 14px", borderRadius: 8,
               border: "0.5px solid " + (followingSeller ? "var(--color-border-success)" : "var(--color-border-secondary)"),
               background: followingSeller ? "var(--color-background-success)" : "none",
               color: followingSeller ? "var(--color-text-success)" : "var(--color-text-secondary)",
               cursor: "pointer", fontFamily: "inherit",
             }}>{followingSeller ? "following" : "+ follow"}</button>
           </div>
-          <p style={{ fontSize: 20, fontWeight: 500, margin: "0 0 6px" }}>Summer Stories</p>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-            <span style={{ fontSize: 11, padding: "4px 10px", borderRadius: 20, background: "var(--color-background-danger)", color: "var(--color-text-danger)", fontWeight: 500, display: "flex", alignItems: "center", gap: 5 }}>
-              <span className="j-pulse" style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--color-text-danger)" }} />live now
+          <p style={{ fontSize: 22, fontWeight: 500, margin: "0 0 8px", letterSpacing: "-0.01em" }}>Summer Stories</p>
+
+          {/* social proof — moved UP so buyers feel the urgency while shopping */}
+          <div style={{ display: "flex", alignItems: "center", gap: 14, fontSize: 12, color: "var(--color-text-secondary)" }}>
+            <span style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--color-text-danger)", fontWeight: 500 }}>
+              <span className="j-pulse" style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--color-text-danger)" }} />
+              live
             </span>
-            <Pill>7 items</Pill><Pill>₹600 – ₹1,400</Pill><Pill>first come first serve</Pill>
+            <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--color-text-success)" }} />
+              <strong style={{ fontWeight: 500, color: "var(--color-text-primary)" }}>31</strong> shopping now
+            </span>
+            <span><strong style={{ fontWeight: 500, color: "var(--color-text-primary)" }}>{available}</strong> of {total} left</span>
           </div>
+          <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", margin: "8px 0 0" }}>₹600 – ₹1,400 · first come first serve</p>
         </div>
 
-        <div style={{ display: "flex", gap: 6, padding: "12px 16px", borderBottom: "0.5px solid var(--color-border-tertiary)", overflowX: "auto" }}>
-          {(["all", "available", "western", "ethnic"] as const).map(f => <Chip key={f} active={filter === f} onClick={() => setFilter(f)}>{f}</Chip>)}
+        <div style={{ padding: "0 16px" }}>
+          <Tabs<"all" | "available" | "western" | "ethnic">
+            items={[
+              { id: "all", label: "all", count: ITEMS.length },
+              { id: "available", label: "available", count: available },
+              { id: "western", label: "western" },
+              { id: "ethnic", label: "ethnic" },
+            ]}
+            value={filter}
+            onChange={setFilter}
+          />
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1, background: "var(--color-border-tertiary)" }}>
@@ -1237,7 +1257,7 @@ function DropLanding({ go, followingSeller, setFollowingSeller }: { go: GoFn; fo
                 <div style={{ aspectRatio: "3/4", background: it.color, position: "relative" }}>
                   {gone && (
                     <div style={{ position: "absolute", inset: 0, background: "rgba(255,255,255,0.7)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <span style={{ fontSize: 12, fontWeight: 500, color: "var(--color-text-secondary)", background: "var(--color-background-primary)", border: "0.5px solid var(--color-border-secondary)", padding: "4px 10px", borderRadius: 20 }}>claimed</span>
+                      <span style={{ fontSize: 12, fontWeight: 500, color: "var(--color-text-secondary)", background: "var(--color-background-primary)", border: "0.5px solid var(--color-border-secondary)", padding: "4px 10px", borderRadius: 6 }}>claimed</span>
                     </div>
                   )}
                 </div>
@@ -1249,13 +1269,6 @@ function DropLanding({ go, followingSeller, setFollowingSeller }: { go: GoFn; fo
               </div>
             );
           })}
-        </div>
-
-        <div style={{ padding: "12px 16px", borderTop: "0.5px solid var(--color-border-tertiary)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <p style={{ fontSize: 12, color: "var(--color-text-secondary)", margin: 0 }}><span style={{ fontWeight: 500, color: "var(--color-text-primary)" }}>5</span> of 7 still available</p>
-          <p style={{ fontSize: 12, color: "var(--color-text-tertiary)", margin: 0, display: "flex", alignItems: "center", gap: 5 }}>
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--color-text-success)" }} />31 people here
-          </p>
         </div>
       </Screen>
     </Wrap>
