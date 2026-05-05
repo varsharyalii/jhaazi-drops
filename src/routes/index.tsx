@@ -1090,28 +1090,32 @@ function Feed({ go, followingSeller, setFollowingSeller }: { go: GoFn; following
     if (id === "1") setFollowingSeller(next);
   };
 
+  const counts = {
+    all: DROPS.length,
+    live: DROPS.filter(d => d.status === "live").length,
+    following: DROPS.filter(d => follows[d.id]).length,
+    upcoming: DROPS.filter(d => d.status === "soon").length,
+  };
+
   return (
     <Wrap>
-      <div style={{ display: "flex", alignItems: "center", marginBottom: 16, gap: 10 }}>
-        <BackBtn onClick={() => go("landing")} />
-        <span style={{ fontSize: 18, fontWeight: 500, flex: 1 }}>jhaazi</span>
-        <div style={{ width: 32, height: 32, borderRadius: "50%", background: "var(--color-background-primary)", border: "0.5px solid var(--color-border-tertiary)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <Bell />
+      <Tabs<"all" | "live" | "following" | "upcoming">
+        items={[
+          { id: "all", label: "all", count: counts.all },
+          { id: "live", label: "live now", count: counts.live },
+          { id: "following", label: "following", count: counts.following },
+          { id: "upcoming", label: "upcoming", count: counts.upcoming },
+        ]}
+        value={filter}
+        onChange={setFilter}
+      />
+      <div style={{ height: 14 }} />
+      {visible.length === 0 && (
+        <div style={{ padding: "32px 16px", textAlign: "center", color: "var(--color-text-tertiary)", fontSize: 13 }}>
+          nothing here yet.
         </div>
-      </div>
-      <div style={{ display: "flex", gap: 8, marginBottom: 16, overflowX: "auto" }}>
-        {(["all", "live", "following", "upcoming"] as const).map(f => (
-          <Chip key={f} active={filter === f} onClick={() => setFilter(f)}>{f === "all" ? "all drops" : f === "live" ? "live now" : f}</Chip>
-        ))}
-      </div>
-
-      {visible.some(d => d.status === "live") && <p style={sectionLabel}>live now</p>}
-      {visible.filter(d => d.status === "live").map(d => (
-        <DropCard key={d.id} d={d} followed={!!follows[d.id]} onFollow={() => toggleFollow(d.id)} onView={() => go("drop")} />
-      ))}
-
-      {visible.some(d => d.status !== "live") && <p style={{ ...sectionLabel, marginTop: 16 }}>{visible.some(d => d.status === "soon") ? "dropping soon" : "past drops"}</p>}
-      {visible.filter(d => d.status !== "live").map(d => (
+      )}
+      {visible.map(d => (
         <DropCard key={d.id} d={d} followed={!!follows[d.id]} onFollow={() => toggleFollow(d.id)} onView={() => go("drop")} />
       ))}
     </Wrap>
