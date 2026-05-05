@@ -6,18 +6,22 @@ export const Route = createFileRoute("/")({ component: App });
 
 type Screen =
   | "landing"
-  | "feed" | "drop" | "item" | "booking" | "follow"
+  | "feed" | "drop" | "item" | "booking" | "follow" | "myfollows"
   | "sellerProfile" | "createDrop" | "addItem" | "dropPreview" | "shareDrop" | "dashboard";
 
 type GoFn = (s: Screen) => void;
 
+// screens that show the global top nav bar (buyer-facing browse surfaces)
+const TOPBAR_SCREENS: Screen[] = ["feed", "drop", "item", "myfollows"];
+
 // ============ APP SHELL ============
 function App() {
-  const [screen, setScreen] = useState<Screen>("landing");
+  const [screen, setScreen] = useState<Screen>("feed");
   const [jumpOpen, setJumpOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [followingSeller, setFollowingSeller] = useState(true);
 
-  const go: GoFn = (s) => { setScreen(s); setJumpOpen(false); window.scrollTo(0, 0); };
+  const go: GoFn = (s) => { setScreen(s); setJumpOpen(false); setMenuOpen(false); window.scrollTo(0, 0); };
 
   const sellerScreens: { id: Screen; label: string }[] = [
     { id: "sellerProfile", label: "1 · seller profile creation" },
@@ -33,17 +37,22 @@ function App() {
     { id: "item", label: "3 · item detail" },
     { id: "booking", label: "4 · booking confirmation" },
     { id: "follow", label: "5 · follow seller" },
+    { id: "myfollows", label: "6 · my follows" },
   ];
+
+  const showTopBar = TOPBAR_SCREENS.includes(screen);
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--color-background-secondary)", paddingBottom: 80 }}>
-      <div style={{ paddingTop: 12 }}>
+      {showTopBar && <TopBar onMenu={() => setMenuOpen(true)} onLogo={() => go("feed")} />}
+      <div style={{ paddingTop: showTopBar ? 0 : 12 }}>
         {screen === "landing" && <Landing go={go} />}
         {screen === "feed" && <Feed go={go} followingSeller={followingSeller} setFollowingSeller={setFollowingSeller} />}
         {screen === "drop" && <DropLanding go={go} followingSeller={followingSeller} setFollowingSeller={setFollowingSeller} />}
         {screen === "item" && <ItemDetail go={go} />}
         {screen === "booking" && <Booking go={go} />}
         {screen === "follow" && <FollowSeller go={go} setFollowingSeller={setFollowingSeller} />}
+        {screen === "myfollows" && <MyFollows go={go} />}
         {screen === "sellerProfile" && <SellerProfile go={go} />}
         {screen === "createDrop" && <CreateDrop go={go} />}
         {screen === "addItem" && <AddItem go={go} />}
@@ -51,6 +60,8 @@ function App() {
         {screen === "shareDrop" && <ShareDrop go={go} />}
         {screen === "dashboard" && <SellerDashboard go={go} />}
       </div>
+
+      {menuOpen && <SideMenu go={go} onClose={() => setMenuOpen(false)} />}
 
       {/* Floating jump-to-screen pill */}
       <button
@@ -153,6 +164,107 @@ const StepBars = ({ active, total = 3 }: { active: number; total?: number }) => 
     ))}
   </div>
 );
+
+// underline tab row — used in place of rounded filter chips (information surfaces only)
+function Tabs<T extends string>({ items, value, onChange }: { items: { id: T; label: string; count?: number }[]; value: T; onChange: (v: T) => void }) {
+  return (
+    <div style={{ display: "flex", gap: 18, overflowX: "auto", borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
+      {items.map(it => {
+        const active = value === it.id;
+        return (
+          <button key={it.id} onClick={() => onChange(it.id)} style={{
+            background: "none", border: "none", padding: "10px 0", cursor: "pointer", fontFamily: "inherit",
+            fontSize: 13, fontWeight: active ? 500 : 400, whiteSpace: "nowrap",
+            color: active ? "var(--color-text-primary)" : "var(--color-text-tertiary)",
+            borderBottom: "1.5px solid " + (active ? "var(--color-text-primary)" : "transparent"),
+            marginBottom: -0.5,
+          }}>
+            {it.label}{typeof it.count === "number" && <span style={{ color: "var(--color-text-tertiary)", marginLeft: 4, fontWeight: 400 }}>{it.count}</span>}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// ============ TOP NAV BAR ============
+function TopBar({ onMenu, onLogo }: { onMenu: () => void; onLogo: () => void }) {
+  return (
+    <div style={{ position: "sticky", top: 0, zIndex: 40, background: "var(--color-background-primary)", borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
+      <div style={{ maxWidth: 390, margin: "0 auto", padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <button onClick={onLogo} style={{ background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "inherit", fontSize: 18, fontWeight: 500, letterSpacing: "-0.01em" }}>
+          jhaazi
+        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <button aria-label="notifications" style={{ width: 32, height: 32, borderRadius: "50%", border: "0.5px solid var(--color-border-tertiary)", background: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+            <Bell />
+          </button>
+          <button aria-label="menu" onClick={onMenu} style={{ width: 32, height: 32, borderRadius: "50%", border: "0.5px solid var(--color-border-tertiary)", background: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 4h10M2 7h10M2 10h10" stroke="var(--color-text-primary)" strokeLinecap="round" /></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SideMenu({ go, onClose }: { go: GoFn; onClose: () => void }) {
+  const item = (label: string, sub: string, onClick: () => void) => (
+    <button onClick={onClick} style={{
+      display: "block", width: "100%", textAlign: "left", padding: "14px 0",
+      borderBottom: "0.5px solid var(--color-border-tertiary)", borderTop: "none", borderLeft: "none", borderRight: "none",
+      background: "none", cursor: "pointer", fontFamily: "inherit",
+    }}>
+      <p style={{ fontSize: 14, fontWeight: 500, margin: "0 0 2px" }}>{label}</p>
+      <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", margin: 0 }}>{sub}</p>
+    </button>
+  );
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", zIndex: 80 }}>
+      <div onClick={e => e.stopPropagation()} style={{
+        position: "absolute", top: 0, right: 0, height: "100%", width: 280, maxWidth: "85%",
+        background: "var(--color-background-primary)", padding: "20px 20px 24px", display: "flex", flexDirection: "column",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
+          <span style={{ fontSize: 16, fontWeight: 500 }}>menu</span>
+          <button onClick={onClose} style={{ background: "none", border: "none", fontSize: 18, color: "var(--color-text-tertiary)", cursor: "pointer" }}>×</button>
+        </div>
+        <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", letterSpacing: "0.06em", margin: "0 0 4px" }}>browse</p>
+        {item("drops", "all live & upcoming drops", () => go("feed"))}
+        {item("my follows", "sellers you follow", () => go("myfollows"))}
+        <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", letterSpacing: "0.06em", margin: "20px 0 4px" }}>account</p>
+        {item("sign up / log in", "save your follows & orders", () => go("feed"))}
+        {item("become a seller", "open your own store", () => go("sellerProfile"))}
+      </div>
+    </div>
+  );
+}
+
+// ============ MY FOLLOWS (placeholder) ============
+function MyFollows({ go }: { go: GoFn }) {
+  return (
+    <Wrap>
+      <Screen>
+        <div style={{ padding: "28px 20px 24px", borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
+          <p style={{ fontSize: 20, fontWeight: 500, margin: "0 0 6px" }}>my follows</p>
+          <p style={{ fontSize: 13, color: "var(--color-text-secondary)", margin: 0, lineHeight: 1.5 }}>sellers you follow drop here first. you'll get a ping the moment they go live.</p>
+        </div>
+        <div style={{ padding: "40px 24px", textAlign: "center" }}>
+          <div style={{ width: 56, height: 56, borderRadius: "50%", background: "var(--color-background-secondary)", margin: "0 auto 14px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <Heart />
+          </div>
+          <p style={{ fontSize: 14, fontWeight: 500, margin: "0 0 6px" }}>no follows yet</p>
+          <p style={{ fontSize: 12, color: "var(--color-text-tertiary)", margin: "0 0 18px", lineHeight: 1.5 }}>find sellers whose taste matches yours.</p>
+          <button onClick={() => go("feed")} style={{
+            padding: "10px 18px", borderRadius: 8, border: "none",
+            background: "var(--color-text-primary)", color: "var(--color-background-primary)",
+            fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: "inherit",
+          }}>browse drops →</button>
+        </div>
+      </Screen>
+    </Wrap>
+  );
+}
 
 // ============ LANDING ============
 function Landing({ go }: { go: GoFn }) {
@@ -978,28 +1090,32 @@ function Feed({ go, followingSeller, setFollowingSeller }: { go: GoFn; following
     if (id === "1") setFollowingSeller(next);
   };
 
+  const counts = {
+    all: DROPS.length,
+    live: DROPS.filter(d => d.status === "live").length,
+    following: DROPS.filter(d => follows[d.id]).length,
+    upcoming: DROPS.filter(d => d.status === "soon").length,
+  };
+
   return (
     <Wrap>
-      <div style={{ display: "flex", alignItems: "center", marginBottom: 16, gap: 10 }}>
-        <BackBtn onClick={() => go("landing")} />
-        <span style={{ fontSize: 18, fontWeight: 500, flex: 1 }}>jhaazi</span>
-        <div style={{ width: 32, height: 32, borderRadius: "50%", background: "var(--color-background-primary)", border: "0.5px solid var(--color-border-tertiary)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <Bell />
+      <Tabs<"all" | "live" | "following" | "upcoming">
+        items={[
+          { id: "all", label: "all", count: counts.all },
+          { id: "live", label: "live now", count: counts.live },
+          { id: "following", label: "following", count: counts.following },
+          { id: "upcoming", label: "upcoming", count: counts.upcoming },
+        ]}
+        value={filter}
+        onChange={setFilter}
+      />
+      <div style={{ height: 14 }} />
+      {visible.length === 0 && (
+        <div style={{ padding: "32px 16px", textAlign: "center", color: "var(--color-text-tertiary)", fontSize: 13 }}>
+          nothing here yet.
         </div>
-      </div>
-      <div style={{ display: "flex", gap: 8, marginBottom: 16, overflowX: "auto" }}>
-        {(["all", "live", "following", "upcoming"] as const).map(f => (
-          <Chip key={f} active={filter === f} onClick={() => setFilter(f)}>{f === "all" ? "all drops" : f === "live" ? "live now" : f}</Chip>
-        ))}
-      </div>
-
-      {visible.some(d => d.status === "live") && <p style={sectionLabel}>live now</p>}
-      {visible.filter(d => d.status === "live").map(d => (
-        <DropCard key={d.id} d={d} followed={!!follows[d.id]} onFollow={() => toggleFollow(d.id)} onView={() => go("drop")} />
-      ))}
-
-      {visible.some(d => d.status !== "live") && <p style={{ ...sectionLabel, marginTop: 16 }}>{visible.some(d => d.status === "soon") ? "dropping soon" : "past drops"}</p>}
-      {visible.filter(d => d.status !== "live").map(d => (
+      )}
+      {visible.map(d => (
         <DropCard key={d.id} d={d} followed={!!follows[d.id]} onFollow={() => toggleFollow(d.id)} onView={() => go("drop")} />
       ))}
     </Wrap>
@@ -1081,11 +1197,14 @@ function DropLanding({ go, followingSeller, setFollowingSeller }: { go: GoFn; fo
   const [filter, setFilter] = useState<"all" | "available" | "western" | "ethnic">("all");
   const visible = ITEMS.filter(i => filter === "all" ? true : filter === "available" ? i.status === "available" : i.cat === filter);
 
+  const available = ITEMS.filter(i => i.status === "available").length;
+  const total = ITEMS.length;
+
   return (
     <Wrap>
       <div style={{ marginBottom: 8 }}><BackBtn onClick={() => go("feed")} /></div>
       <Screen>
-        <div style={{ padding: "20px 16px 16px", borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
+        <div style={{ padding: "20px 16px 14px", borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
             <div style={{ width: 38, height: 38, borderRadius: "50%", background: "#E1F5EE", color: "#085041", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 500 }}>JP</div>
             <div style={{ flex: 1 }}>
@@ -1093,24 +1212,41 @@ function DropLanding({ go, followingSeller, setFollowingSeller }: { go: GoFn; fo
               <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", margin: 0 }}>214 followers</p>
             </div>
             <button onClick={() => setFollowingSeller(!followingSeller)} style={{
-              fontSize: 12, padding: "6px 14px", borderRadius: 20,
+              fontSize: 12, padding: "6px 14px", borderRadius: 8,
               border: "0.5px solid " + (followingSeller ? "var(--color-border-success)" : "var(--color-border-secondary)"),
               background: followingSeller ? "var(--color-background-success)" : "none",
               color: followingSeller ? "var(--color-text-success)" : "var(--color-text-secondary)",
               cursor: "pointer", fontFamily: "inherit",
             }}>{followingSeller ? "following" : "+ follow"}</button>
           </div>
-          <p style={{ fontSize: 20, fontWeight: 500, margin: "0 0 6px" }}>Summer Stories</p>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-            <span style={{ fontSize: 11, padding: "4px 10px", borderRadius: 20, background: "var(--color-background-danger)", color: "var(--color-text-danger)", fontWeight: 500, display: "flex", alignItems: "center", gap: 5 }}>
-              <span className="j-pulse" style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--color-text-danger)" }} />live now
+          <p style={{ fontSize: 22, fontWeight: 500, margin: "0 0 8px", letterSpacing: "-0.01em" }}>Summer Stories</p>
+
+          {/* social proof — moved UP so buyers feel the urgency while shopping */}
+          <div style={{ display: "flex", alignItems: "center", gap: 14, fontSize: 12, color: "var(--color-text-secondary)" }}>
+            <span style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--color-text-danger)", fontWeight: 500 }}>
+              <span className="j-pulse" style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--color-text-danger)" }} />
+              live
             </span>
-            <Pill>7 items</Pill><Pill>₹600 – ₹1,400</Pill><Pill>first come first serve</Pill>
+            <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--color-text-success)" }} />
+              <strong style={{ fontWeight: 500, color: "var(--color-text-primary)" }}>31</strong> shopping now
+            </span>
+            <span><strong style={{ fontWeight: 500, color: "var(--color-text-primary)" }}>{available}</strong> of {total} left</span>
           </div>
+          <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", margin: "8px 0 0" }}>₹600 – ₹1,400 · first come first serve</p>
         </div>
 
-        <div style={{ display: "flex", gap: 6, padding: "12px 16px", borderBottom: "0.5px solid var(--color-border-tertiary)", overflowX: "auto" }}>
-          {(["all", "available", "western", "ethnic"] as const).map(f => <Chip key={f} active={filter === f} onClick={() => setFilter(f)}>{f}</Chip>)}
+        <div style={{ padding: "0 16px" }}>
+          <Tabs<"all" | "available" | "western" | "ethnic">
+            items={[
+              { id: "all", label: "all", count: ITEMS.length },
+              { id: "available", label: "available", count: available },
+              { id: "western", label: "western" },
+              { id: "ethnic", label: "ethnic" },
+            ]}
+            value={filter}
+            onChange={setFilter}
+          />
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1, background: "var(--color-border-tertiary)" }}>
@@ -1121,7 +1257,7 @@ function DropLanding({ go, followingSeller, setFollowingSeller }: { go: GoFn; fo
                 <div style={{ aspectRatio: "3/4", background: it.color, position: "relative" }}>
                   {gone && (
                     <div style={{ position: "absolute", inset: 0, background: "rgba(255,255,255,0.7)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <span style={{ fontSize: 12, fontWeight: 500, color: "var(--color-text-secondary)", background: "var(--color-background-primary)", border: "0.5px solid var(--color-border-secondary)", padding: "4px 10px", borderRadius: 20 }}>claimed</span>
+                      <span style={{ fontSize: 12, fontWeight: 500, color: "var(--color-text-secondary)", background: "var(--color-background-primary)", border: "0.5px solid var(--color-border-secondary)", padding: "4px 10px", borderRadius: 6 }}>claimed</span>
                     </div>
                   )}
                 </div>
@@ -1133,13 +1269,6 @@ function DropLanding({ go, followingSeller, setFollowingSeller }: { go: GoFn; fo
               </div>
             );
           })}
-        </div>
-
-        <div style={{ padding: "12px 16px", borderTop: "0.5px solid var(--color-border-tertiary)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <p style={{ fontSize: 12, color: "var(--color-text-secondary)", margin: 0 }}><span style={{ fontWeight: 500, color: "var(--color-text-primary)" }}>5</span> of 7 still available</p>
-          <p style={{ fontSize: 12, color: "var(--color-text-tertiary)", margin: 0, display: "flex", alignItems: "center", gap: 5 }}>
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--color-text-success)" }} />31 people here
-          </p>
         </div>
       </Screen>
     </Wrap>
