@@ -40,15 +40,19 @@ function App() {
     { id: "myfollows", label: "6 · my follows" },
   ];
 
+  const showTopBar = TOPBAR_SCREENS.includes(screen);
+
   return (
     <div style={{ minHeight: "100vh", background: "var(--color-background-secondary)", paddingBottom: 80 }}>
-      <div style={{ paddingTop: 12 }}>
+      {showTopBar && <TopBar onMenu={() => setMenuOpen(true)} onLogo={() => go("feed")} />}
+      <div style={{ paddingTop: showTopBar ? 0 : 12 }}>
         {screen === "landing" && <Landing go={go} />}
         {screen === "feed" && <Feed go={go} followingSeller={followingSeller} setFollowingSeller={setFollowingSeller} />}
         {screen === "drop" && <DropLanding go={go} followingSeller={followingSeller} setFollowingSeller={setFollowingSeller} />}
         {screen === "item" && <ItemDetail go={go} />}
         {screen === "booking" && <Booking go={go} />}
         {screen === "follow" && <FollowSeller go={go} setFollowingSeller={setFollowingSeller} />}
+        {screen === "myfollows" && <MyFollows go={go} />}
         {screen === "sellerProfile" && <SellerProfile go={go} />}
         {screen === "createDrop" && <CreateDrop go={go} />}
         {screen === "addItem" && <AddItem go={go} />}
@@ -56,6 +60,8 @@ function App() {
         {screen === "shareDrop" && <ShareDrop go={go} />}
         {screen === "dashboard" && <SellerDashboard go={go} />}
       </div>
+
+      {menuOpen && <SideMenu go={go} onClose={() => setMenuOpen(false)} />}
 
       {/* Floating jump-to-screen pill */}
       <button
