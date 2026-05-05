@@ -6,18 +6,22 @@ export const Route = createFileRoute("/")({ component: App });
 
 type Screen =
   | "landing"
-  | "feed" | "drop" | "item" | "booking" | "follow"
+  | "feed" | "drop" | "item" | "booking" | "follow" | "myfollows"
   | "sellerProfile" | "createDrop" | "addItem" | "dropPreview" | "shareDrop" | "dashboard";
 
 type GoFn = (s: Screen) => void;
 
+// screens that show the global top nav bar (buyer-facing browse surfaces)
+const TOPBAR_SCREENS: Screen[] = ["feed", "drop", "item", "myfollows"];
+
 // ============ APP SHELL ============
 function App() {
-  const [screen, setScreen] = useState<Screen>("landing");
+  const [screen, setScreen] = useState<Screen>("feed");
   const [jumpOpen, setJumpOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [followingSeller, setFollowingSeller] = useState(true);
 
-  const go: GoFn = (s) => { setScreen(s); setJumpOpen(false); window.scrollTo(0, 0); };
+  const go: GoFn = (s) => { setScreen(s); setJumpOpen(false); setMenuOpen(false); window.scrollTo(0, 0); };
 
   const sellerScreens: { id: Screen; label: string }[] = [
     { id: "sellerProfile", label: "1 · seller profile creation" },
