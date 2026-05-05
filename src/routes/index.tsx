@@ -165,6 +165,107 @@ const StepBars = ({ active, total = 3 }: { active: number; total?: number }) => 
   </div>
 );
 
+// underline tab row — used in place of rounded filter chips (information surfaces only)
+function Tabs<T extends string>({ items, value, onChange }: { items: { id: T; label: string; count?: number }[]; value: T; onChange: (v: T) => void }) {
+  return (
+    <div style={{ display: "flex", gap: 18, overflowX: "auto", borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
+      {items.map(it => {
+        const active = value === it.id;
+        return (
+          <button key={it.id} onClick={() => onChange(it.id)} style={{
+            background: "none", border: "none", padding: "10px 0", cursor: "pointer", fontFamily: "inherit",
+            fontSize: 13, fontWeight: active ? 500 : 400, whiteSpace: "nowrap",
+            color: active ? "var(--color-text-primary)" : "var(--color-text-tertiary)",
+            borderBottom: "1.5px solid " + (active ? "var(--color-text-primary)" : "transparent"),
+            marginBottom: -0.5,
+          }}>
+            {it.label}{typeof it.count === "number" && <span style={{ color: "var(--color-text-tertiary)", marginLeft: 4, fontWeight: 400 }}>{it.count}</span>}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// ============ TOP NAV BAR ============
+function TopBar({ onMenu, onLogo }: { onMenu: () => void; onLogo: () => void }) {
+  return (
+    <div style={{ position: "sticky", top: 0, zIndex: 40, background: "var(--color-background-primary)", borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
+      <div style={{ maxWidth: 390, margin: "0 auto", padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <button onClick={onLogo} style={{ background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "inherit", fontSize: 18, fontWeight: 500, letterSpacing: "-0.01em" }}>
+          jhaazi
+        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <button aria-label="notifications" style={{ width: 32, height: 32, borderRadius: "50%", border: "0.5px solid var(--color-border-tertiary)", background: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+            <Bell />
+          </button>
+          <button aria-label="menu" onClick={onMenu} style={{ width: 32, height: 32, borderRadius: "50%", border: "0.5px solid var(--color-border-tertiary)", background: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 4h10M2 7h10M2 10h10" stroke="var(--color-text-primary)" strokeLinecap="round" /></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SideMenu({ go, onClose }: { go: GoFn; onClose: () => void }) {
+  const item = (label: string, sub: string, onClick: () => void) => (
+    <button onClick={onClick} style={{
+      display: "block", width: "100%", textAlign: "left", padding: "14px 0",
+      borderBottom: "0.5px solid var(--color-border-tertiary)", borderTop: "none", borderLeft: "none", borderRight: "none",
+      background: "none", cursor: "pointer", fontFamily: "inherit",
+    }}>
+      <p style={{ fontSize: 14, fontWeight: 500, margin: "0 0 2px" }}>{label}</p>
+      <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", margin: 0 }}>{sub}</p>
+    </button>
+  );
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", zIndex: 80 }}>
+      <div onClick={e => e.stopPropagation()} style={{
+        position: "absolute", top: 0, right: 0, height: "100%", width: 280, maxWidth: "85%",
+        background: "var(--color-background-primary)", padding: "20px 20px 24px", display: "flex", flexDirection: "column",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
+          <span style={{ fontSize: 16, fontWeight: 500 }}>menu</span>
+          <button onClick={onClose} style={{ background: "none", border: "none", fontSize: 18, color: "var(--color-text-tertiary)", cursor: "pointer" }}>×</button>
+        </div>
+        <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", letterSpacing: "0.06em", margin: "0 0 4px" }}>browse</p>
+        {item("drops", "all live & upcoming drops", () => go("feed"))}
+        {item("my follows", "sellers you follow", () => go("myfollows"))}
+        <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", letterSpacing: "0.06em", margin: "20px 0 4px" }}>account</p>
+        {item("sign up / log in", "save your follows & orders", () => go("feed"))}
+        {item("become a seller", "open your own store", () => go("sellerProfile"))}
+      </div>
+    </div>
+  );
+}
+
+// ============ MY FOLLOWS (placeholder) ============
+function MyFollows({ go }: { go: GoFn }) {
+  return (
+    <Wrap>
+      <Screen>
+        <div style={{ padding: "28px 20px 24px", borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
+          <p style={{ fontSize: 20, fontWeight: 500, margin: "0 0 6px" }}>my follows</p>
+          <p style={{ fontSize: 13, color: "var(--color-text-secondary)", margin: 0, lineHeight: 1.5 }}>sellers you follow drop here first. you'll get a ping the moment they go live.</p>
+        </div>
+        <div style={{ padding: "40px 24px", textAlign: "center" }}>
+          <div style={{ width: 56, height: 56, borderRadius: "50%", background: "var(--color-background-secondary)", margin: "0 auto 14px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <Heart />
+          </div>
+          <p style={{ fontSize: 14, fontWeight: 500, margin: "0 0 6px" }}>no follows yet</p>
+          <p style={{ fontSize: 12, color: "var(--color-text-tertiary)", margin: "0 0 18px", lineHeight: 1.5 }}>find sellers whose taste matches yours.</p>
+          <button onClick={() => go("feed")} style={{
+            padding: "10px 18px", borderRadius: 8, border: "none",
+            background: "var(--color-text-primary)", color: "var(--color-background-primary)",
+            fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: "inherit",
+          }}>browse drops →</button>
+        </div>
+      </Screen>
+    </Wrap>
+  );
+}
+
 // ============ LANDING ============
 function Landing({ go }: { go: GoFn }) {
   return (
