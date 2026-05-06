@@ -79,7 +79,10 @@ function App() {
         {screen === "landing" && <Landing go={go} />}
         {screen === "feed" && <Feed go={go} followingSeller={followingSeller} setFollowingSeller={setFollowingSeller} />}
         {screen === "drop" && <DropLanding go={go} followingSeller={followingSeller} setFollowingSeller={setFollowingSeller} />}
-        {screen === "item" && <ItemDetail go={go} />}
+        {screen === "item" && <ItemDetail go={go} startClaim={startClaim} />}
+        {screen === "claimHold" && <ClaimHold claim={claim} onCheckout={proceedToCheckout} onRelease={() => { setClaim(null); go("drop"); }} />}
+        {screen === "signup" && <Signup go={go} onDone={completeSignup} claim={claim} />}
+        {screen === "missed" && <Missed go={go} />}
         {screen === "booking" && <Booking go={go} />}
         {screen === "follow" && <FollowSeller go={go} setFollowingSeller={setFollowingSeller} />}
         {screen === "myfollows" && <MyFollows go={go} />}
