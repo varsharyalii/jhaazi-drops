@@ -6,13 +6,13 @@ export const Route = createFileRoute("/")({ component: App });
 
 type Screen =
   | "landing"
-  | "feed" | "drop" | "item" | "booking" | "follow" | "myfollows"
+  | "feed" | "drop" | "item" | "booking" | "follow" | "myfollows" | "sellerStore"
   | "sellerProfile" | "createDrop" | "addItem" | "dropPreview" | "shareDrop" | "dashboard";
 
 type GoFn = (s: Screen) => void;
 
 // screens that show the global top nav bar (buyer-facing browse surfaces)
-const TOPBAR_SCREENS: Screen[] = ["feed", "drop", "item", "myfollows"];
+const TOPBAR_SCREENS: Screen[] = ["feed", "drop", "item", "myfollows", "sellerStore"];
 
 // ============ APP SHELL ============
 function App() {
@@ -38,6 +38,7 @@ function App() {
     { id: "booking", label: "4 · booking confirmation" },
     { id: "follow", label: "5 · follow seller" },
     { id: "myfollows", label: "6 · my follows" },
+    { id: "sellerStore", label: "7 · seller storefront" },
   ];
 
   const showTopBar = TOPBAR_SCREENS.includes(screen);
@@ -53,6 +54,7 @@ function App() {
         {screen === "booking" && <Booking go={go} />}
         {screen === "follow" && <FollowSeller go={go} setFollowingSeller={setFollowingSeller} />}
         {screen === "myfollows" && <MyFollows go={go} />}
+        {screen === "sellerStore" && <SellerStore go={go} followingSeller={followingSeller} setFollowingSeller={setFollowingSeller} />}
         {screen === "sellerProfile" && <SellerProfile go={go} />}
         {screen === "createDrop" && <CreateDrop go={go} />}
         {screen === "addItem" && <AddItem go={go} />}
@@ -1116,13 +1118,13 @@ function Feed({ go, followingSeller, setFollowingSeller }: { go: GoFn; following
         </div>
       )}
       {visible.map(d => (
-        <DropCard key={d.id} d={d} followed={!!follows[d.id]} onFollow={() => toggleFollow(d.id)} onView={() => go("drop")} />
+        <DropCard key={d.id} d={d} followed={!!follows[d.id]} onFollow={() => toggleFollow(d.id)} onView={() => go("drop")} onSeller={() => go("sellerStore")} />
       ))}
     </Wrap>
   );
 }
 
-function DropCard({ d, followed, onFollow, onView }: { d: Drop; followed: boolean; onFollow: () => void; onView: () => void }) {
+function DropCard({ d, followed, onFollow, onView, onSeller }: { d: Drop; followed: boolean; onFollow: () => void; onView: () => void; onSeller: () => void }) {
   const isSold = d.status === "sold";
   return (
     <div style={{
@@ -1131,11 +1133,13 @@ function DropCard({ d, followed, onFollow, onView }: { d: Drop; followed: boolea
       borderRadius: 14, padding: 12, marginBottom: 10, opacity: isSold ? 0.45 : 1,
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-        <div style={{ width: 32, height: 32, borderRadius: "50%", background: d.avBg, color: d.avFg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 500 }}>{d.init}</div>
-        <div>
-          <p style={{ fontSize: 13, fontWeight: 500, margin: 0 }}>{d.seller}</p>
-          <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", margin: 0 }}>{d.handle}</p>
-        </div>
+        <button onClick={onSeller} style={{ display: "flex", alignItems: "center", gap: 8, background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "inherit", textAlign: "left" }}>
+          <div style={{ width: 32, height: 32, borderRadius: "50%", background: d.avBg, color: d.avFg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 500 }}>{d.init}</div>
+          <div>
+            <p style={{ fontSize: 13, fontWeight: 500, margin: 0 }}>{d.seller}</p>
+            <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", margin: 0 }}>{d.handle}</p>
+          </div>
+        </button>
         {isSold ? (
           <span style={{ marginLeft: "auto", fontSize: 10, padding: "3px 8px", borderRadius: 20, background: "var(--color-background-secondary)", color: "var(--color-text-tertiary)", fontWeight: 500 }}>sold out</span>
         ) : (
@@ -1206,11 +1210,13 @@ function DropLanding({ go, followingSeller, setFollowingSeller }: { go: GoFn; fo
       <Screen>
         <div style={{ padding: "20px 16px 14px", borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-            <div style={{ width: 38, height: 38, borderRadius: "50%", background: "#E1F5EE", color: "#085041", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 500 }}>JP</div>
-            <div style={{ flex: 1 }}>
-              <p style={{ fontSize: 14, fontWeight: 500, margin: "0 0 1px" }}>jhaazi_picks</p>
-              <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", margin: 0 }}>214 followers</p>
-            </div>
+            <button onClick={() => go("sellerStore")} style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "inherit", textAlign: "left" }}>
+              <div style={{ width: 38, height: 38, borderRadius: "50%", background: "#E1F5EE", color: "#085041", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 500 }}>JP</div>
+              <div>
+                <p style={{ fontSize: 14, fontWeight: 500, margin: "0 0 1px" }}>jhaazi_picks</p>
+                <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", margin: 0 }}>214 followers · view store ↗</p>
+              </div>
+            </button>
             <button onClick={() => setFollowingSeller(!followingSeller)} style={{
               fontSize: 12, padding: "6px 14px", borderRadius: 8,
               border: "0.5px solid " + (followingSeller ? "var(--color-border-success)" : "var(--color-border-secondary)"),
@@ -1498,3 +1504,160 @@ function FollowSeller({ go, setFollowingSeller }: { go: GoFn; setFollowingSeller
 
 // silence unused-import warning
 void Heart;
+
+// ============ SELLER STOREFRONT (public, buyer-facing) ============
+const STORE_DROPS: { id: string; name: string; status: "live" | "soon" | "ended"; meta: string; colors: string[] }[] = [
+  { id: "s1", name: "Summer Stories", status: "live", meta: "live · 5 left", colors: ["#D3D1C7", "#B4B2A9", "#888780", "#F4C0D1"] },
+  { id: "s2", name: "Pre-loved Denim", status: "ended", meta: "ended · 12 sold", colors: ["#9DA8C4", "#5F6F8E", "#2E3A52", "#C8B89F"] },
+  { id: "s3", name: "Linen Lounge", status: "ended", meta: "ended · 8 sold", colors: ["#E8DFC9", "#D2C29A", "#B59E6E", "#7E6A47"] },
+  { id: "s4", name: "Y2K Reboot", status: "soon", meta: "drops fri 7pm", colors: ["#F4C0D1", "#CECBF6", "#AFA9EC", "#7F77DD"] },
+];
+
+type WallEntry = { id: string; kind: "review" | "comment"; user: string; init: string; bg: string; fg: string; rating?: number; text: string; when: string; tag?: string };
+const WALL: WallEntry[] = [
+  { id: "w1", kind: "review", user: "ananya_r", init: "AR", bg: "#FBEAF0", fg: "#72243E", rating: 5, text: "got my floral midi from her last drop — exactly as shown, packed beautifully, shipped in 2 days. will buy again 🌸", when: "2d", tag: "Summer Stories" },
+  { id: "w2", kind: "comment", user: "thrift.queen", init: "TQ", bg: "#EEEDFE", fg: "#3C3489", text: "your taste is unreal!! when's the next ethnic drop?", when: "3d" },
+  { id: "w3", kind: "review", user: "meher.s", init: "MS", bg: "#E1F5EE", fg: "#085041", rating: 5, text: "third order from JP. always honest about condition, never any surprises.", when: "1w", tag: "Pre-loved Denim" },
+  { id: "w4", kind: "comment", user: "vintage.vee", init: "VV", bg: "#FAEEDA", fg: "#633806", text: "the linen kurta in your last drop was 🔥 missed it by a minute", when: "1w" },
+  { id: "w5", kind: "review", user: "ria_p", init: "RP", bg: "#FBEAF0", fg: "#72243E", rating: 4, text: "loved the piece, sizing ran a touch small but seller was super helpful over chat.", when: "2w", tag: "Linen Lounge" },
+];
+
+function SellerStore({ go, followingSeller, setFollowingSeller }: { go: GoFn; followingSeller: boolean; setFollowingSeller: (v: boolean) => void }) {
+  const [tab, setTab] = useState<"drops" | "wall">("drops");
+  const [filter, setFilter] = useState<"all" | "review" | "comment">("all");
+  const [composer, setComposer] = useState("");
+  const [extraWall, setExtraWall] = useState<WallEntry[]>([]);
+
+  const allWall = [...extraWall, ...WALL];
+  const visibleWall = filter === "all" ? allWall : allWall.filter(w => w.kind === filter);
+  const reviews = allWall.filter(w => w.kind === "review");
+  const avg = reviews.length ? (reviews.reduce((a, w) => a + (w.rating ?? 0), 0) / reviews.length).toFixed(1) : "—";
+
+  const submit = () => {
+    if (!composer.trim()) return;
+    setExtraWall([{ id: "x" + Date.now(), kind: "comment", user: "you", init: "Y", bg: "var(--color-background-secondary)", fg: "var(--color-text-primary)", text: composer.trim(), when: "now" }, ...extraWall]);
+    setComposer("");
+  };
+
+  return (
+    <Wrap>
+      <div style={{ marginBottom: 8 }}><BackBtn onClick={() => go("feed")} /></div>
+      <Screen>
+        {/* cover */}
+        <div style={{ height: 88, background: "linear-gradient(135deg, #E1F5EE 0%, #CDE8DA 60%, #B3D8C2 100%)" }} />
+        <div style={{ padding: "0 18px 18px", borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
+          <div style={{ marginTop: -28, display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 12 }}>
+            <div style={{ width: 64, height: 64, borderRadius: "50%", background: "#E1F5EE", color: "#085041", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, fontWeight: 500, border: "3px solid var(--color-background-primary)" }}>JP</div>
+            <button onClick={() => setFollowingSeller(!followingSeller)} style={{
+              fontSize: 13, padding: "8px 18px", borderRadius: 8,
+              border: "0.5px solid " + (followingSeller ? "var(--color-border-success)" : "var(--color-text-primary)"),
+              background: followingSeller ? "var(--color-background-success)" : "var(--color-text-primary)",
+              color: followingSeller ? "var(--color-text-success)" : "var(--color-background-primary)",
+              cursor: "pointer", fontFamily: "inherit", fontWeight: 500,
+            }}>{followingSeller ? "following" : "+ follow"}</button>
+          </div>
+          <p style={{ fontSize: 18, fontWeight: 500, margin: "0 0 2px" }}>jhaazi_picks</p>
+          <p style={{ fontSize: 12, color: "var(--color-text-tertiary)", margin: "0 0 10px" }}>@jhaazi_picks · bombay</p>
+          <p style={{ fontSize: 13, color: "var(--color-text-secondary)", lineHeight: 1.5, margin: "0 0 14px" }}>
+            curated thrift · western & ethnic · drops every other friday. each piece checked, photographed honestly, and shipped within 48 hours.
+          </p>
+
+          {/* trust stats */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 8 }}>
+            {[
+              { v: "214", l: "followers" },
+              { v: "47", l: "orders shipped" },
+              { v: "1.8d", l: "avg ship time" },
+              { v: avg + "★", l: reviews.length + " reviews" },
+            ].map(s => (
+              <div key={s.l} style={{ background: "var(--color-background-secondary)", borderRadius: 10, padding: "10px 8px", textAlign: "center" }}>
+                <p style={{ fontSize: 14, fontWeight: 500, margin: "0 0 2px" }}>{s.v}</p>
+                <p style={{ fontSize: 10, color: "var(--color-text-tertiary)", margin: 0, lineHeight: 1.2 }}>{s.l}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* tabs */}
+        <div style={{ padding: "0 18px" }}>
+          <Tabs<"drops" | "wall">
+            items={[
+              { id: "drops", label: "drops", count: STORE_DROPS.length },
+              { id: "wall", label: "wall", count: allWall.length },
+            ]}
+            value={tab}
+            onChange={setTab}
+          />
+        </div>
+
+        {tab === "drops" && (
+          <div style={{ padding: 14, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            {STORE_DROPS.map(d => (
+              <button key={d.id} onClick={() => d.status === "live" && go("drop")} style={{ background: "none", border: "0.5px solid var(--color-border-tertiary)", borderRadius: 10, padding: 8, cursor: d.status === "live" ? "pointer" : "default", fontFamily: "inherit", textAlign: "left", opacity: d.status === "ended" ? 0.7 : 1 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2, aspectRatio: "1", borderRadius: 6, overflow: "hidden", marginBottom: 8 }}>
+                  {d.colors.slice(0, 4).map((c, i) => <div key={i} style={{ background: c }} />)}
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
+                  {d.status === "live" && <span className="j-pulse" style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--color-text-danger)" }} />}
+                  <p style={{ fontSize: 12, fontWeight: 500, margin: 0 }}>{d.name}</p>
+                </div>
+                <p style={{ fontSize: 10, color: "var(--color-text-tertiary)", margin: 0 }}>{d.meta}</p>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {tab === "wall" && (
+          <div style={{ padding: "12px 18px 20px" }}>
+            {/* composer */}
+            <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
+              <input
+                value={composer}
+                onChange={e => setComposer(e.target.value)}
+                placeholder="leave a note for jhaazi_picks…"
+                style={{ ...fieldStyle, fontSize: 13, padding: "10px 12px" }}
+              />
+              <button onClick={submit} disabled={!composer.trim()} style={{
+                padding: "0 14px", borderRadius: 8, border: "none",
+                background: composer.trim() ? "var(--color-text-primary)" : "var(--color-background-tertiary)",
+                color: composer.trim() ? "var(--color-background-primary)" : "var(--color-text-tertiary)",
+                fontSize: 13, fontWeight: 500, cursor: composer.trim() ? "pointer" : "default", fontFamily: "inherit",
+              }}>post</button>
+            </div>
+
+            {/* filter */}
+            <div style={{ display: "flex", gap: 14, fontSize: 12, marginBottom: 14, color: "var(--color-text-tertiary)" }}>
+              {(["all", "review", "comment"] as const).map(f => (
+                <button key={f} onClick={() => setFilter(f)} style={{
+                  background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "inherit", fontSize: 12,
+                  fontWeight: filter === f ? 500 : 400,
+                  color: filter === f ? "var(--color-text-primary)" : "var(--color-text-tertiary)",
+                }}>{f}{f !== "all" ? "s" : ""}</button>
+              ))}
+            </div>
+
+            {visibleWall.map(w => (
+              <div key={w.id} style={{ paddingBottom: 14, marginBottom: 14, borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                  <div style={{ width: 28, height: 28, borderRadius: "50%", background: w.bg, color: w.fg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 500 }}>{w.init}</div>
+                  <p style={{ fontSize: 12, fontWeight: 500, margin: 0, flex: 1 }}>{w.user}</p>
+                  {w.kind === "review" && (
+                    <span style={{ fontSize: 11, color: "var(--color-text-warning)", fontWeight: 500 }}>
+                      {"★".repeat(w.rating ?? 0)}{"☆".repeat(5 - (w.rating ?? 0))}
+                    </span>
+                  )}
+                  <span style={{ fontSize: 10, color: "var(--color-text-tertiary)" }}>{w.when}</span>
+                </div>
+                <p style={{ fontSize: 13, color: "var(--color-text-secondary)", margin: "0 0 4px", lineHeight: 1.5 }}>{w.text}</p>
+                {w.tag && <p style={{ fontSize: 10, color: "var(--color-text-tertiary)", margin: 0 }}>on {w.tag}</p>}
+              </div>
+            ))}
+            {visibleWall.length === 0 && (
+              <p style={{ textAlign: "center", color: "var(--color-text-tertiary)", fontSize: 12, padding: "20px 0" }}>nothing here yet.</p>
+            )}
+          </div>
+        )}
+      </Screen>
+    </Wrap>
+  );
+}
