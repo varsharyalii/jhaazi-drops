@@ -1118,7 +1118,7 @@ function Feed({ go, followingSeller, setFollowingSeller }: { go: GoFn; following
         </div>
       )}
       {visible.map(d => (
-        <DropCard key={d.id} d={d} followed={!!follows[d.id]} onFollow={() => toggleFollow(d.id)} onView={() => go("drop")} />
+        <DropCard key={d.id} d={d} followed={!!follows[d.id]} onFollow={() => toggleFollow(d.id)} onView={() => go("drop")} onSeller={() => go("sellerStore")} />
       ))}
     </Wrap>
   );
