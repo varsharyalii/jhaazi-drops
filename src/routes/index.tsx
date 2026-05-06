@@ -83,7 +83,7 @@ function App() {
         {screen === "claimHold" && <ClaimHold claim={claim} onCheckout={proceedToCheckout} onRelease={() => { setClaim(null); go("drop"); }} />}
         {screen === "signup" && <Signup go={go} onDone={completeSignup} claim={claim} />}
         {screen === "missed" && <Missed go={go} />}
-        {screen === "booking" && <Booking go={go} />}
+        {screen === "booking" && <Booking go={go} claim={claim} signedIn={signedIn} onDone={() => { setClaim(null); go("follow"); }} />}
         {screen === "follow" && <FollowSeller go={go} setFollowingSeller={setFollowingSeller} />}
         {screen === "myfollows" && <MyFollows go={go} />}
         {screen === "sellerStore" && <SellerStore go={go} followingSeller={followingSeller} setFollowingSeller={setFollowingSeller} />}
