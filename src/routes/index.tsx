@@ -267,7 +267,7 @@ function SideMenu({ go, onClose }: { go: GoFn; onClose: () => void }) {
         {item("drops", "all live & upcoming drops", () => go("feed"))}
         {item("my follows", "sellers you follow", () => go("myfollows"))}
         <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", letterSpacing: "0.06em", margin: "20px 0 4px" }}>account</p>
-        {item("sign up / log in", "save your follows & orders", () => go("feed"))}
+        {item("sign up / log in", "save your follows & orders", () => go("signup"))}
         {item("become a seller", "open your own store", () => go("sellerProfile"))}
       </div>
     </div>
