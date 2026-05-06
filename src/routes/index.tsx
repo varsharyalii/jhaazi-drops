@@ -1207,13 +1207,14 @@ function DropLanding({ go, followingSeller, setFollowingSeller }: { go: GoFn; fo
       <div style={{ marginBottom: 8 }}><BackBtn onClick={() => go("feed")} /></div>
       <Screen>
         <div style={{ padding: "20px 16px 14px", borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
-          <button onClick={() => go("sellerStore")} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14, background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "inherit", width: "100%", textAlign: "left" }}>
-            <div style={{ width: 38, height: 38, borderRadius: "50%", background: "#E1F5EE", color: "#085041", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 500 }}>JP</div>
-            <div style={{ flex: 1 }}>
-              <p style={{ fontSize: 14, fontWeight: 500, margin: "0 0 1px" }}>jhaazi_picks</p>
-              <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", margin: 0 }}>214 followers · view store ↗</p>
-            </div></button>
-            <div style={{ marginTop: -52, marginBottom: 14, display: "flex", justifyContent: "flex-end" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+            <button onClick={() => go("sellerStore")} style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "inherit", textAlign: "left" }}>
+              <div style={{ width: 38, height: 38, borderRadius: "50%", background: "#E1F5EE", color: "#085041", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 500 }}>JP</div>
+              <div>
+                <p style={{ fontSize: 14, fontWeight: 500, margin: "0 0 1px" }}>jhaazi_picks</p>
+                <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", margin: 0 }}>214 followers · view store ↗</p>
+              </div>
+            </button>
             <button onClick={() => setFollowingSeller(!followingSeller)} style={{
               fontSize: 12, padding: "6px 14px", borderRadius: 8,
               border: "0.5px solid " + (followingSeller ? "var(--color-border-success)" : "var(--color-border-secondary)"),
