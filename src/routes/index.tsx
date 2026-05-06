@@ -6,7 +6,7 @@ export const Route = createFileRoute("/")({ component: App });
 
 type Screen =
   | "landing"
-  | "feed" | "drop" | "item" | "booking" | "follow" | "myfollows" | "sellerStore"
+  | "feed" | "drop" | "item" | "claimHold" | "signup" | "booking" | "missed" | "follow" | "myfollows" | "sellerStore"
   | "sellerProfile" | "createDrop" | "addItem" | "dropPreview" | "shareDrop" | "dashboard";
 
 type GoFn = (s: Screen) => void;
@@ -14,14 +14,40 @@ type GoFn = (s: Screen) => void;
 // screens that show the global top nav bar (buyer-facing browse surfaces)
 const TOPBAR_SCREENS: Screen[] = ["feed", "drop", "item", "myfollows", "sellerStore"];
 
+// 10-minute claim hold (in ms). Lowered for demo so it's actually visible.
+const HOLD_MS = 10 * 60 * 1000;
+
+type ClaimedItem = { name: string; price: string; size: string; deadline: number };
+
 // ============ APP SHELL ============
 function App() {
   const [screen, setScreen] = useState<Screen>("feed");
   const [jumpOpen, setJumpOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [followingSeller, setFollowingSeller] = useState(true);
+  const [signedIn, setSignedIn] = useState(false);
+  const [claim, setClaim] = useState<ClaimedItem | null>(null);
 
   const go: GoFn = (s) => { setScreen(s); setJumpOpen(false); setMenuOpen(false); window.scrollTo(0, 0); };
+
+  // global hold-expiry watcher — if a claim exists and timer runs out anywhere
+  // inside the buyer purchase funnel, kick the user to the "just missed it" screen.
+  useEffect(() => {
+    if (!claim) return;
+    const inFunnel = ["claimHold", "signup", "booking"].includes(screen);
+    if (!inFunnel) return;
+    const remaining = claim.deadline - Date.now();
+    if (remaining <= 0) { setClaim(null); go("missed"); return; }
+    const t = setTimeout(() => { setClaim(null); go("missed"); }, remaining);
+    return () => clearTimeout(t);
+  }, [claim, screen]);
+
+  const startClaim = (item: Omit<ClaimedItem, "deadline">) => {
+    setClaim({ ...item, deadline: Date.now() + HOLD_MS });
+    go("claimHold");
+  };
+  const proceedToCheckout = () => go(signedIn ? "booking" : "signup");
+  const completeSignup = () => { setSignedIn(true); go(claim ? "booking" : "feed"); };
 
   const sellerScreens: { id: Screen; label: string }[] = [
     { id: "sellerProfile", label: "1 · seller profile creation" },
@@ -35,10 +61,13 @@ function App() {
     { id: "feed", label: "1 · marketplace feed" },
     { id: "drop", label: "2 · drop landing" },
     { id: "item", label: "3 · item detail" },
-    { id: "booking", label: "4 · booking confirmation" },
-    { id: "follow", label: "5 · follow seller" },
-    { id: "myfollows", label: "6 · my follows" },
-    { id: "sellerStore", label: "7 · seller storefront" },
+    { id: "claimHold", label: "4 · claim hold (10-min timer)" },
+    { id: "signup", label: "5 · signup at checkout" },
+    { id: "booking", label: "6 · booking & payment" },
+    { id: "missed", label: "7 · just missed it" },
+    { id: "follow", label: "8 · follow seller" },
+    { id: "myfollows", label: "9 · my follows" },
+    { id: "sellerStore", label: "10 · seller storefront" },
   ];
 
   const showTopBar = TOPBAR_SCREENS.includes(screen);
@@ -50,8 +79,11 @@ function App() {
         {screen === "landing" && <Landing go={go} />}
         {screen === "feed" && <Feed go={go} followingSeller={followingSeller} setFollowingSeller={setFollowingSeller} />}
         {screen === "drop" && <DropLanding go={go} followingSeller={followingSeller} setFollowingSeller={setFollowingSeller} />}
-        {screen === "item" && <ItemDetail go={go} />}
-        {screen === "booking" && <Booking go={go} />}
+        {screen === "item" && <ItemDetail go={go} startClaim={startClaim} />}
+        {screen === "claimHold" && <ClaimHold claim={claim} onCheckout={proceedToCheckout} onRelease={() => { setClaim(null); go("drop"); }} />}
+        {screen === "signup" && <Signup go={go} onDone={completeSignup} claim={claim} />}
+        {screen === "missed" && <Missed go={go} />}
+        {screen === "booking" && <Booking go={go} claim={claim} signedIn={signedIn} onDone={() => { setClaim(null); go("follow"); }} />}
         {screen === "follow" && <FollowSeller go={go} setFollowingSeller={setFollowingSeller} />}
         {screen === "myfollows" && <MyFollows go={go} />}
         {screen === "sellerStore" && <SellerStore go={go} followingSeller={followingSeller} setFollowingSeller={setFollowingSeller} />}
@@ -235,7 +267,7 @@ function SideMenu({ go, onClose }: { go: GoFn; onClose: () => void }) {
         {item("drops", "all live & upcoming drops", () => go("feed"))}
         {item("my follows", "sellers you follow", () => go("myfollows"))}
         <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", letterSpacing: "0.06em", margin: "20px 0 4px" }}>account</p>
-        {item("sign up / log in", "save your follows & orders", () => go("feed"))}
+        {item("sign up / log in", "save your follows & orders", () => go("signup"))}
         {item("become a seller", "open your own store", () => go("sellerProfile"))}
       </div>
     </div>
@@ -1282,12 +1314,12 @@ function DropLanding({ go, followingSeller, setFollowingSeller }: { go: GoFn; fo
 }
 
 // ============ BUYER 3 — ITEM DETAIL ============
-function ItemDetail({ go }: { go: GoFn }) {
+function ItemDetail({ go, startClaim }: { go: GoFn; startClaim: (item: { name: string; price: string; size: string }) => void }) {
   const colors = ["#B4B2A9", "#888780", "#5F5E5A", "#D3D1C7"];
   const [photo, setPhoto] = useState(0);
   const [claimed, setClaimed] = useState(false);
 
-  const claim = () => { setClaimed(true); setTimeout(() => go("booking"), 700); };
+  const onClaim = () => { setClaimed(true); setTimeout(() => startClaim({ name: "Floral midi dress", price: "₹850", size: "S" }), 500); };
 
   return (
     <Wrap>
@@ -1348,7 +1380,7 @@ function ItemDetail({ go }: { go: GoFn }) {
 
         <div style={{ display: "flex", gap: 10, alignItems: "center", padding: "12px 16px 16px", borderTop: "0.5px solid var(--color-border-tertiary)" }}>
           <button style={{ padding: "12px 16px", borderRadius: 8, border: "0.5px solid var(--color-border-secondary)", background: "none", fontSize: 13, color: "var(--color-text-secondary)", cursor: "pointer", fontFamily: "inherit" }}>ask seller ↗</button>
-          <button onClick={claim} disabled={claimed} style={{
+          <button onClick={onClaim} disabled={claimed} style={{
             flex: 1, padding: 13, borderRadius: 8, border: claimed ? "0.5px solid var(--color-border-success)" : "none",
             background: claimed ? "var(--color-background-success)" : "var(--color-text-primary)",
             color: claimed ? "var(--color-text-success)" : "var(--color-background-primary)",
@@ -1360,23 +1392,167 @@ function ItemDetail({ go }: { go: GoFn }) {
   );
 }
 
-// ============ BUYER 4 — BOOKING ============
-function Booking({ go }: { go: GoFn }) {
+// ============ BUYER 4 — CLAIM HOLD (low-friction, 10-min countdown) ============
+function useCountdown(deadline: number | undefined) {
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    if (!deadline) return;
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, [deadline]);
+  const ms = Math.max(0, (deadline ?? 0) - now);
+  const m = Math.floor(ms / 60000);
+  const s = Math.floor((ms % 60000) / 1000);
+  return { ms, label: `${m}:${String(s).padStart(2, "0")}` };
+}
+
+function ClaimHold({ claim, onCheckout, onRelease }: { claim: ClaimedItem | null; onCheckout: () => void; onRelease: () => void }) {
+  const { ms, label } = useCountdown(claim?.deadline);
+  if (!claim) return null;
+  const danger = ms < 2 * 60 * 1000;
+  return (
+    <Wrap>
+      <Screen>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "14px 16px", borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
+          <BackBtn onClick={onRelease} />
+          <span style={{ fontSize: 14, fontWeight: 500 }}>your hold</span>
+        </div>
+
+        <div style={{ padding: "28px 20px 22px", textAlign: "center", borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
+          <div style={{ width: 56, height: 56, borderRadius: "50%", background: "var(--color-background-success)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}><Check /></div>
+          <p style={{ fontSize: 18, fontWeight: 500, margin: "0 0 4px" }}>held for you</p>
+          <p style={{ fontSize: 13, color: "var(--color-text-secondary)", margin: 0 }}>no one else can grab this — you have time to check out</p>
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "16px 20px", borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
+          <div style={{ width: 56, height: 56, borderRadius: 8, background: "#B4B2A9", flexShrink: 0 }} />
+          <div style={{ flex: 1 }}>
+            <p style={{ fontSize: 14, fontWeight: 500, margin: "0 0 2px" }}>{claim.name}</p>
+            <p style={{ fontSize: 12, color: "var(--color-text-secondary)", margin: 0 }}>{claim.price} · size {claim.size}</p>
+          </div>
+        </div>
+
+        <div style={{ padding: "20px", textAlign: "center" }}>
+          <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", letterSpacing: "0.06em", margin: "0 0 8px" }}>time left to check out</p>
+          <p style={{ fontSize: 36, fontWeight: 500, margin: "0 0 6px", fontVariantNumeric: "tabular-nums", color: danger ? "var(--color-text-danger)" : "var(--color-text-primary)" }}>{label}</p>
+          <p style={{ fontSize: 12, color: "var(--color-text-secondary)", margin: "0 0 22px", lineHeight: 1.5 }}>after that the item goes back to the pool for others to claim</p>
+
+          <button onClick={onCheckout} style={{
+            width: "100%", padding: 14, borderRadius: 8, border: "none",
+            background: "var(--color-text-primary)", color: "var(--color-background-primary)",
+            fontSize: 15, fontWeight: 500, cursor: "pointer", fontFamily: "inherit",
+          }}>check out — {claim.price}</button>
+          <button onClick={onRelease} style={{ background: "none", border: "none", fontSize: 12, color: "var(--color-text-tertiary)", cursor: "pointer", marginTop: 12, fontFamily: "inherit" }}>release & keep browsing</button>
+        </div>
+      </Screen>
+    </Wrap>
+  );
+}
+
+// ============ BUYER 5 — SIGNUP (at checkout, or from menu) ============
+function Signup({ go, onDone, claim }: { go: GoFn; onDone: () => void; claim: ClaimedItem | null }) {
+  const [step, setStep] = useState<1 | 2>(1);
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [otp, setOtp] = useState("");
+  const { label, ms } = useCountdown(claim?.deadline);
+  const phoneOk = phone.replace(/\D/g, "").length >= 10;
+  const otpOk = otp.length === 4;
+
+  return (
+    <Wrap>
+      <Screen>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "14px 16px", borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
+          <BackBtn onClick={() => step === 2 ? setStep(1) : (claim ? go("claimHold") : go("feed"))} />
+          <span style={{ fontSize: 14, fontWeight: 500 }}>{claim ? "quick signup to check out" : "create your account"}</span>
+        </div>
+
+        {claim && ms > 0 && (
+          <div style={{ padding: "10px 16px", background: "var(--color-background-warning)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <p style={{ fontSize: 12, color: "var(--color-text-warning)", margin: 0 }}>holding {claim.name}</p>
+            <p style={{ fontSize: 12, fontWeight: 500, color: "var(--color-text-warning)", margin: 0, fontVariantNumeric: "tabular-nums" }}>{label} left</p>
+          </div>
+        )}
+
+        {step === 1 && (
+          <div style={{ padding: "20px 16px" }}>
+            <p style={{ fontSize: 13, color: "var(--color-text-secondary)", margin: "0 0 18px", lineHeight: 1.5 }}>we just need a few details so the seller can ship to you & you can track your orders.</p>
+            <div style={{ marginBottom: 14 }}><label style={labelStyle}>full name</label><input value={name} onChange={e => setName(e.target.value)} placeholder="Priya Mehta" style={fieldStyle} /></div>
+            <div style={{ marginBottom: 14 }}><label style={labelStyle}>phone number</label><input value={phone} onChange={e => setPhone(e.target.value)} placeholder="98765 43210" inputMode="tel" style={fieldStyle} /></div>
+            <div style={{ marginBottom: 18 }}><label style={labelStyle}>email (optional)</label><input value={email} onChange={e => setEmail(e.target.value)} placeholder="priya@email.com" style={fieldStyle} /></div>
+            <button onClick={() => setStep(2)} disabled={!name.trim() || !phoneOk} style={{
+              width: "100%", padding: 13, borderRadius: 8, border: "none", fontSize: 15, fontWeight: 500,
+              background: "var(--color-text-primary)", color: "var(--color-background-primary)",
+              cursor: "pointer", opacity: !name.trim() || !phoneOk ? 0.35 : 1, fontFamily: "inherit",
+            }}>send OTP</button>
+            <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", textAlign: "center", margin: "14px 0 0" }}>by continuing you agree to our terms & privacy policy</p>
+          </div>
+        )}
+
+        {step === 2 && (
+          <div style={{ padding: "20px 16px" }}>
+            <p style={{ fontSize: 13, color: "var(--color-text-secondary)", margin: "0 0 4px" }}>we sent a 4-digit code to</p>
+            <p style={{ fontSize: 14, fontWeight: 500, margin: "0 0 18px" }}>+91 {phone}</p>
+            <input value={otp} onChange={e => setOtp(e.target.value.replace(/\D/g, "").slice(0, 4))} placeholder="• • • •" inputMode="numeric" style={{ ...fieldStyle, textAlign: "center", fontSize: 22, letterSpacing: "0.5em", marginBottom: 14 }} />
+            <button onClick={onDone} disabled={!otpOk} style={{
+              width: "100%", padding: 13, borderRadius: 8, border: "none", fontSize: 15, fontWeight: 500,
+              background: "var(--color-text-primary)", color: "var(--color-background-primary)",
+              cursor: "pointer", opacity: !otpOk ? 0.35 : 1, fontFamily: "inherit",
+            }}>{claim ? "verify & continue to checkout" : "verify & create account"}</button>
+            <button style={{ background: "none", border: "none", fontSize: 12, color: "var(--color-text-tertiary)", cursor: "pointer", marginTop: 12, width: "100%", fontFamily: "inherit" }}>resend code</button>
+          </div>
+        )}
+      </Screen>
+    </Wrap>
+  );
+}
+
+// ============ BUYER 6 — JUST MISSED IT ============
+function Missed({ go }: { go: GoFn }) {
+  return (
+    <Wrap>
+      <Screen>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "14px 16px", borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
+          <BackBtn onClick={() => go("drop")} />
+          <span style={{ fontSize: 14, fontWeight: 500 }}>just missed it</span>
+        </div>
+        <div style={{ padding: "44px 24px 28px", textAlign: "center" }}>
+          <div style={{ width: 60, height: 60, borderRadius: "50%", background: "var(--color-background-warning)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px", fontSize: 26 }}>⏱</div>
+          <p style={{ fontSize: 18, fontWeight: 500, margin: "0 0 6px" }}>your hold expired</p>
+          <p style={{ fontSize: 13, color: "var(--color-text-secondary)", margin: "0 0 22px", lineHeight: 1.5 }}>the item went back to the pool. someone else may have grabbed it — but the drop is still live.</p>
+          <button onClick={() => go("drop")} style={{
+            width: "100%", padding: 13, borderRadius: 8, border: "none",
+            background: "var(--color-text-primary)", color: "var(--color-background-primary)",
+            fontSize: 15, fontWeight: 500, cursor: "pointer", fontFamily: "inherit",
+          }}>back to the drop</button>
+          <button onClick={() => go("feed")} style={{ background: "none", border: "none", fontSize: 12, color: "var(--color-text-tertiary)", cursor: "pointer", marginTop: 12, fontFamily: "inherit" }}>browse other drops</button>
+        </div>
+        <div style={{ borderTop: "0.5px solid var(--color-border-tertiary)", padding: "16px 20px", background: "var(--color-background-secondary)" }}>
+          <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", letterSpacing: "0.05em", margin: "0 0 4px" }}>tip</p>
+          <p style={{ fontSize: 12, color: "var(--color-text-secondary)", margin: 0, lineHeight: 1.5 }}>follow this seller — you'll get notified the second their next drop goes live, before it hits the public feed.</p>
+        </div>
+      </Screen>
+    </Wrap>
+  );
+}
+
+// ============ BUYER 7 — BOOKING (post-signup: address + confirm) ============
+function Booking({ go, claim, signedIn, onDone }: { go: GoFn; claim: ClaimedItem | null; signedIn: boolean; onDone: () => void }) {
   const [step, setStep] = useState(1);
-  const [name, setName] = useState("Priya Mehta");
-  const [phone, setPhone] = useState("98765 43210");
   const [done, setDone] = useState(false);
+  const { label, ms } = useCountdown(claim?.deadline);
 
   useEffect(() => {
-    if (step === 3) {
-      const t1 = setTimeout(() => setDone(true), 1800);
-      const t2 = setTimeout(() => go("follow"), 3000);
+    if (step === 2) {
+      const t1 = setTimeout(() => setDone(true), 1600);
+      const t2 = setTimeout(() => onDone(), 2600);
       return () => { clearTimeout(t1); clearTimeout(t2); };
     }
-  }, [step, go]);
+  }, [step, onDone]);
 
-  const back = () => step > 1 ? setStep(step - 1) : go("item");
-  const labels = ["claim your item", "shipping details", "confirming"];
+  const back = () => step > 1 ? setStep(step - 1) : go("claimHold");
+  const labels = ["shipping & delivery", "confirming"];
 
   return (
     <Wrap>
@@ -1385,56 +1561,41 @@ function Booking({ go }: { go: GoFn }) {
           <BackBtn onClick={back} />
           <span style={{ fontSize: 14, fontWeight: 500 }}>{labels[step - 1]}</span>
           <div style={{ display: "flex", gap: 4, marginLeft: "auto" }}>
-            {[1, 2, 3].map(i => <div key={i} style={{ width: 6, height: 6, borderRadius: "50%", background: i <= step ? "var(--color-text-primary)" : "var(--color-border-secondary)" }} />)}
+            {[1, 2].map(i => <div key={i} style={{ width: 6, height: 6, borderRadius: "50%", background: i <= step ? "var(--color-text-primary)" : "var(--color-border-secondary)" }} />)}
           </div>
         </div>
 
+        {/* item header — focused on delivery & size, not generic info */}
         <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", background: "var(--color-background-secondary)" }}>
           <div style={{ width: 48, height: 48, borderRadius: 8, background: "#B4B2A9", flexShrink: 0 }} />
-          <div>
-            <p style={{ fontSize: 13, fontWeight: 500, margin: "0 0 2px" }}>Floral midi dress</p>
-            <p style={{ fontSize: 12, color: "var(--color-text-secondary)", margin: 0 }}>
-              <span className="j-pulse" style={{ display: "inline-block", width: 6, height: 6, borderRadius: "50%", background: "var(--color-text-danger)", marginRight: 4 }} />
-              someone else might grab this · move fast
-            </p>
+          <div style={{ flex: 1 }}>
+            <p style={{ fontSize: 13, fontWeight: 500, margin: "0 0 2px" }}>{claim?.name ?? "Floral midi dress"} · {claim?.price ?? "₹850"}</p>
+            <p style={{ fontSize: 11, color: "var(--color-text-secondary)", margin: 0 }}>size {claim?.size ?? "S"} · ships in 2 days · delivery 4–6 days</p>
           </div>
+          {claim && ms > 0 && signedIn && (
+            <span style={{ fontSize: 11, fontWeight: 500, color: "var(--color-text-warning)", fontVariantNumeric: "tabular-nums" }}>{label}</span>
+          )}
         </div>
 
         {step === 1 && (
           <div style={{ padding: "20px 16px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", background: "var(--color-background-warning)", borderRadius: 8, marginBottom: 16 }}>
-              <p style={{ fontSize: 12, color: "var(--color-text-warning)", margin: 0 }}>⚠ 3 people are looking at this item right now</p>
+            <div style={{ marginBottom: 16 }}><label style={labelStyle}>delivery address</label><input placeholder="flat / house no., building" style={fieldStyle} /></div>
+            <div style={{ marginBottom: 16 }}><input placeholder="area, street, locality" style={fieldStyle} /></div>
+            <div style={{ display: "flex", gap: 10, marginBottom: 18 }}>
+              <div style={{ flex: 1 }}><label style={labelStyle}>city</label><input placeholder="Mumbai" style={fieldStyle} /></div>
+              <div style={{ flex: 1 }}><label style={labelStyle}>pincode</label><input placeholder="400001" maxLength={6} style={fieldStyle} /></div>
             </div>
-            <div style={{ marginBottom: 16 }}><label style={labelStyle}>your name</label><input value={name} onChange={e => setName(e.target.value)} style={fieldStyle} /></div>
-            <div style={{ marginBottom: 8 }}><label style={labelStyle}>phone number</label><input value={phone} onChange={e => setPhone(e.target.value)} style={fieldStyle} /></div>
-            <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", margin: "0 0 16px" }}>we'll send your booking details here</p>
-            <button onClick={() => setStep(2)} disabled={!name.trim() || !phone.trim()} style={{
-              width: "100%", padding: 13, borderRadius: 8, fontSize: 15, fontWeight: 500, border: "none",
-              background: "var(--color-text-primary)", color: "var(--color-background-primary)",
-              cursor: "pointer", opacity: !name.trim() || !phone.trim() ? 0.35 : 1, fontFamily: "inherit",
-            }}>next — shipping details</button>
+            <button onClick={() => setStep(2)} style={{ width: "100%", padding: 13, borderRadius: 8, fontSize: 15, fontWeight: 500, border: "none", background: "var(--color-text-primary)", color: "var(--color-background-primary)", cursor: "pointer", fontFamily: "inherit" }}>pay {claim?.price ?? "₹850"} via UPI</button>
           </div>
         )}
 
         {step === 2 && (
-          <div style={{ padding: "20px 16px" }}>
-            <div style={{ marginBottom: 16 }}><label style={labelStyle}>delivery address</label><input placeholder="flat / house no., building" style={fieldStyle} /></div>
-            <div style={{ marginBottom: 16 }}><input placeholder="area, street, locality" style={fieldStyle} /></div>
-            <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
-              <div style={{ flex: 1 }}><label style={labelStyle}>city</label><input placeholder="Mumbai" style={fieldStyle} /></div>
-              <div style={{ flex: 1 }}><label style={labelStyle}>pincode</label><input placeholder="400001" maxLength={6} style={fieldStyle} /></div>
-            </div>
-            <button onClick={() => setStep(3)} style={{ width: "100%", padding: 13, borderRadius: 8, fontSize: 15, fontWeight: 500, border: "none", background: "var(--color-text-primary)", color: "var(--color-background-primary)", cursor: "pointer", fontFamily: "inherit" }}>confirm booking</button>
-          </div>
-        )}
-
-        {step === 3 && (
           <div style={{ textAlign: "center", padding: "48px 24px" }}>
             {!done
               ? <div className="j-spin" style={{ width: 40, height: 40, border: "2px solid var(--color-border-tertiary)", borderTopColor: "var(--color-text-primary)", borderRadius: "50%", margin: "0 auto 20px" }} />
               : <div style={{ width: 40, height: 40, margin: "0 auto 20px", display: "flex", alignItems: "center", justifyContent: "center" }}><Check w={32} /></div>}
-            <p style={{ fontSize: 16, fontWeight: 500, margin: "0 0 6px" }}>{done ? "you got it" : "securing your item"}</p>
-            <p style={{ fontSize: 13, color: "var(--color-text-secondary)", margin: 0 }}>{done ? "taking you to payment" : "making sure no one else gets it"}</p>
+            <p style={{ fontSize: 16, fontWeight: 500, margin: "0 0 6px" }}>{done ? "you got it" : "confirming your order"}</p>
+            <p style={{ fontSize: 13, color: "var(--color-text-secondary)", margin: 0 }}>{done ? "ships in 2 days · delivery 4–6 days" : "locking it in"}</p>
           </div>
         )}
       </Screen>
