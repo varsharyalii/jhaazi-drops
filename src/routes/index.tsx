@@ -6,7 +6,7 @@ export const Route = createFileRoute("/")({ component: App });
 
 type Screen =
   | "landing"
-  | "feed" | "drop" | "item" | "booking" | "follow" | "myfollows"
+  | "feed" | "drop" | "item" | "booking" | "follow" | "myfollows" | "sellerStore"
   | "sellerProfile" | "createDrop" | "addItem" | "dropPreview" | "shareDrop" | "dashboard";
 
 type GoFn = (s: Screen) => void;
