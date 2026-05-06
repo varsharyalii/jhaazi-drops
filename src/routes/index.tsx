@@ -38,6 +38,7 @@ function App() {
     { id: "booking", label: "4 · booking confirmation" },
     { id: "follow", label: "5 · follow seller" },
     { id: "myfollows", label: "6 · my follows" },
+    { id: "sellerStore", label: "7 · seller storefront" },
   ];
 
   const showTopBar = TOPBAR_SCREENS.includes(screen);
