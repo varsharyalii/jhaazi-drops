@@ -12,7 +12,7 @@ type Screen =
 type GoFn = (s: Screen) => void;
 
 // screens that show the global top nav bar (buyer-facing browse surfaces)
-const TOPBAR_SCREENS: Screen[] = ["feed", "drop", "item", "myfollows"];
+const TOPBAR_SCREENS: Screen[] = ["feed", "drop", "item", "myfollows", "sellerStore"];
 
 // ============ APP SHELL ============
 function App() {
