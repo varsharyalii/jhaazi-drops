@@ -1380,7 +1380,7 @@ function ItemDetail({ go, startClaim }: { go: GoFn; startClaim: (item: { name: s
 
         <div style={{ display: "flex", gap: 10, alignItems: "center", padding: "12px 16px 16px", borderTop: "0.5px solid var(--color-border-tertiary)" }}>
           <button style={{ padding: "12px 16px", borderRadius: 8, border: "0.5px solid var(--color-border-secondary)", background: "none", fontSize: 13, color: "var(--color-text-secondary)", cursor: "pointer", fontFamily: "inherit" }}>ask seller ↗</button>
-          <button onClick={claim} disabled={claimed} style={{
+          <button onClick={onClaim} disabled={claimed} style={{
             flex: 1, padding: 13, borderRadius: 8, border: claimed ? "0.5px solid var(--color-border-success)" : "none",
             background: claimed ? "var(--color-background-success)" : "var(--color-text-primary)",
             color: claimed ? "var(--color-text-success)" : "var(--color-background-primary)",
