@@ -61,10 +61,13 @@ function App() {
     { id: "feed", label: "1 · marketplace feed" },
     { id: "drop", label: "2 · drop landing" },
     { id: "item", label: "3 · item detail" },
-    { id: "booking", label: "4 · booking confirmation" },
-    { id: "follow", label: "5 · follow seller" },
-    { id: "myfollows", label: "6 · my follows" },
-    { id: "sellerStore", label: "7 · seller storefront" },
+    { id: "claimHold", label: "4 · claim hold (10-min timer)" },
+    { id: "signup", label: "5 · signup at checkout" },
+    { id: "booking", label: "6 · booking & payment" },
+    { id: "missed", label: "7 · just missed it" },
+    { id: "follow", label: "8 · follow seller" },
+    { id: "myfollows", label: "9 · my follows" },
+    { id: "sellerStore", label: "10 · seller storefront" },
   ];
 
   const showTopBar = TOPBAR_SCREENS.includes(screen);
