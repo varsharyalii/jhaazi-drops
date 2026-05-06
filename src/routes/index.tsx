@@ -1124,7 +1124,7 @@ function Feed({ go, followingSeller, setFollowingSeller }: { go: GoFn; following
   );
 }
 
-function DropCard({ d, followed, onFollow, onView }: { d: Drop; followed: boolean; onFollow: () => void; onView: () => void }) {
+function DropCard({ d, followed, onFollow, onView, onSeller }: { d: Drop; followed: boolean; onFollow: () => void; onView: () => void; onSeller: () => void }) {
   const isSold = d.status === "sold";
   return (
     <div style={{
@@ -1133,11 +1133,13 @@ function DropCard({ d, followed, onFollow, onView }: { d: Drop; followed: boolea
       borderRadius: 14, padding: 12, marginBottom: 10, opacity: isSold ? 0.45 : 1,
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-        <div style={{ width: 32, height: 32, borderRadius: "50%", background: d.avBg, color: d.avFg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 500 }}>{d.init}</div>
-        <div>
-          <p style={{ fontSize: 13, fontWeight: 500, margin: 0 }}>{d.seller}</p>
-          <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", margin: 0 }}>{d.handle}</p>
-        </div>
+        <button onClick={onSeller} style={{ display: "flex", alignItems: "center", gap: 8, background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "inherit", textAlign: "left" }}>
+          <div style={{ width: 32, height: 32, borderRadius: "50%", background: d.avBg, color: d.avFg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 500 }}>{d.init}</div>
+          <div>
+            <p style={{ fontSize: 13, fontWeight: 500, margin: 0 }}>{d.seller}</p>
+            <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", margin: 0 }}>{d.handle}</p>
+          </div>
+        </button>
         {isSold ? (
           <span style={{ marginLeft: "auto", fontSize: 10, padding: "3px 8px", borderRadius: 20, background: "var(--color-background-secondary)", color: "var(--color-text-tertiary)", fontWeight: 500 }}>sold out</span>
         ) : (
