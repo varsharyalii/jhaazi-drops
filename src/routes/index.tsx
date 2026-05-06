@@ -54,6 +54,7 @@ function App() {
         {screen === "booking" && <Booking go={go} />}
         {screen === "follow" && <FollowSeller go={go} setFollowingSeller={setFollowingSeller} />}
         {screen === "myfollows" && <MyFollows go={go} />}
+        {screen === "sellerStore" && <SellerStore go={go} followingSeller={followingSeller} setFollowingSeller={setFollowingSeller} />}
         {screen === "sellerProfile" && <SellerProfile go={go} />}
         {screen === "createDrop" && <CreateDrop go={go} />}
         {screen === "addItem" && <AddItem go={go} />}
