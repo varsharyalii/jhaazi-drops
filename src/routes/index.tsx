@@ -1314,12 +1314,12 @@ function DropLanding({ go, followingSeller, setFollowingSeller }: { go: GoFn; fo
 }
 
 // ============ BUYER 3 — ITEM DETAIL ============
-function ItemDetail({ go }: { go: GoFn }) {
+function ItemDetail({ go, startClaim }: { go: GoFn; startClaim: (item: { name: string; price: string; size: string }) => void }) {
   const colors = ["#B4B2A9", "#888780", "#5F5E5A", "#D3D1C7"];
   const [photo, setPhoto] = useState(0);
   const [claimed, setClaimed] = useState(false);
 
-  const claim = () => { setClaimed(true); setTimeout(() => go("booking"), 700); };
+  const onClaim = () => { setClaimed(true); setTimeout(() => startClaim({ name: "Floral midi dress", price: "₹850", size: "S" }), 500); };
 
   return (
     <Wrap>
