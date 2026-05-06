@@ -6,7 +6,7 @@ export const Route = createFileRoute("/")({ component: App });
 
 type Screen =
   | "landing"
-  | "feed" | "drop" | "item" | "booking" | "follow" | "myfollows" | "sellerStore"
+  | "feed" | "drop" | "item" | "claimHold" | "signup" | "booking" | "missed" | "follow" | "myfollows" | "sellerStore"
   | "sellerProfile" | "createDrop" | "addItem" | "dropPreview" | "shareDrop" | "dashboard";
 
 type GoFn = (s: Screen) => void;
@@ -14,14 +14,40 @@ type GoFn = (s: Screen) => void;
 // screens that show the global top nav bar (buyer-facing browse surfaces)
 const TOPBAR_SCREENS: Screen[] = ["feed", "drop", "item", "myfollows", "sellerStore"];
 
+// 10-minute claim hold (in ms). Lowered for demo so it's actually visible.
+const HOLD_MS = 10 * 60 * 1000;
+
+type ClaimedItem = { name: string; price: string; size: string; deadline: number };
+
 // ============ APP SHELL ============
 function App() {
   const [screen, setScreen] = useState<Screen>("feed");
   const [jumpOpen, setJumpOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [followingSeller, setFollowingSeller] = useState(true);
+  const [signedIn, setSignedIn] = useState(false);
+  const [claim, setClaim] = useState<ClaimedItem | null>(null);
 
   const go: GoFn = (s) => { setScreen(s); setJumpOpen(false); setMenuOpen(false); window.scrollTo(0, 0); };
+
+  // global hold-expiry watcher — if a claim exists and timer runs out anywhere
+  // inside the buyer purchase funnel, kick the user to the "just missed it" screen.
+  useEffect(() => {
+    if (!claim) return;
+    const inFunnel = ["claimHold", "signup", "booking"].includes(screen);
+    if (!inFunnel) return;
+    const remaining = claim.deadline - Date.now();
+    if (remaining <= 0) { setClaim(null); go("missed"); return; }
+    const t = setTimeout(() => { setClaim(null); go("missed"); }, remaining);
+    return () => clearTimeout(t);
+  }, [claim, screen]);
+
+  const startClaim = (item: Omit<ClaimedItem, "deadline">) => {
+    setClaim({ ...item, deadline: Date.now() + HOLD_MS });
+    go("claimHold");
+  };
+  const proceedToCheckout = () => go(signedIn ? "booking" : "signup");
+  const completeSignup = () => { setSignedIn(true); go(claim ? "booking" : "feed"); };
 
   const sellerScreens: { id: Screen; label: string }[] = [
     { id: "sellerProfile", label: "1 · seller profile creation" },
