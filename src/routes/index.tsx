@@ -24,14 +24,23 @@ type ClaimedItem = { name: string; price: string; size: string; deadline: number
 
 // ============ APP SHELL ============
 function App() {
+  const [session, setSession] = useState<Session>({ role: "guest" });
   const [screen, setScreen] = useState<Screen>("feed");
   const [jumpOpen, setJumpOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [followingSeller, setFollowingSeller] = useState(true);
-  const [signedIn, setSignedIn] = useState(false);
   const [claim, setClaim] = useState<ClaimedItem | null>(null);
 
+  const signedIn = session.role !== "guest";
   const go: GoFn = (s) => { setScreen(s); setJumpOpen(false); setMenuOpen(false); window.scrollTo(0, 0); };
+
+  const setRole = (role: Role) => {
+    if (role === "seller") setSession({ role: "seller", sellerApproved: true });
+    else if (role === "buyer") setSession({ role: "buyer" });
+    else setSession({ role: "guest" });
+    // route to that role's home
+    go(role === "seller" ? "dashboard" : "feed");
+  };
 
   // global hold-expiry watcher — if a claim exists and timer runs out anywhere
   // inside the buyer purchase funnel, kick the user to the "just missed it" screen.
@@ -50,15 +59,27 @@ function App() {
     go("claimHold");
   };
   const proceedToCheckout = () => go(signedIn ? "booking" : "signup");
-  const completeSignup = () => { setSignedIn(true); go(claim ? "booking" : "feed"); };
+  const completeSignup = () => {
+    setSession(prev => prev.role === "guest" ? { role: "buyer" } : prev);
+    go(claim ? "booking" : "feed");
+  };
+  const approveSeller = () => {
+    setSession({ role: "seller", sellerApproved: true });
+    go("sellerApplyApproved");
+  };
 
+  const onboardingScreens: { id: Screen; label: string }[] = [
+    { id: "sellerApply", label: "a · apply to sell" },
+    { id: "sellerApplyPending", label: "b · application pending" },
+    { id: "sellerApplyApproved", label: "c · approved + invite" },
+  ];
   const sellerScreens: { id: Screen; label: string }[] = [
-    { id: "sellerProfile", label: "1 · seller profile creation" },
-    { id: "createDrop", label: "2 · create drop" },
-    { id: "addItem", label: "3 · add item" },
-    { id: "dropPreview", label: "4 · drop preview" },
-    { id: "shareDrop", label: "5 · share drop link" },
-    { id: "dashboard", label: "6 · live seller dashboard" },
+    { id: "dashboard", label: "1 · seller dashboard (home)" },
+    { id: "sellerProfile", label: "2 · store setup" },
+    { id: "createDrop", label: "3 · create drop" },
+    { id: "addItem", label: "4 · add item" },
+    { id: "dropPreview", label: "5 · drop preview" },
+    { id: "shareDrop", label: "6 · share drop link" },
   ];
   const buyerScreens: { id: Screen; label: string }[] = [
     { id: "feed", label: "1 · marketplace feed" },
@@ -77,7 +98,7 @@ function App() {
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--color-background-secondary)", paddingBottom: 80 }}>
-      {showTopBar && <TopBar onMenu={() => setMenuOpen(true)} onLogo={() => go("feed")} />}
+      {showTopBar && <TopBar onMenu={() => setMenuOpen(true)} onLogo={() => go(session.role === "seller" ? "dashboard" : "feed")} />}
       <div style={{ paddingTop: showTopBar ? 0 : 12 }}>
         {screen === "landing" && <Landing go={go} />}
         {screen === "feed" && <Feed go={go} followingSeller={followingSeller} setFollowingSeller={setFollowingSeller} />}
@@ -90,6 +111,9 @@ function App() {
         {screen === "follow" && <FollowSeller go={go} setFollowingSeller={setFollowingSeller} />}
         {screen === "myfollows" && <MyFollows go={go} />}
         {screen === "sellerStore" && <SellerStore go={go} followingSeller={followingSeller} setFollowingSeller={setFollowingSeller} />}
+        {screen === "sellerApply" && <SellerApply go={go} />}
+        {screen === "sellerApplyPending" && <SellerApplyPending go={go} onApprove={approveSeller} />}
+        {screen === "sellerApplyApproved" && <SellerApplyApproved go={go} />}
         {screen === "sellerProfile" && <SellerProfile go={go} />}
         {screen === "createDrop" && <CreateDrop go={go} />}
         {screen === "addItem" && <AddItem go={go} />}
@@ -98,7 +122,7 @@ function App() {
         {screen === "dashboard" && <SellerDashboard go={go} />}
       </div>
 
-      {menuOpen && <SideMenu go={go} onClose={() => setMenuOpen(false)} />}
+      {menuOpen && <SideMenu go={go} onClose={() => setMenuOpen(false)} session={session} setRole={setRole} />}
 
       {/* Floating jump-to-screen pill */}
       <button
