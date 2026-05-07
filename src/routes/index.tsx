@@ -344,6 +344,188 @@ function SideMenu({ go, onClose, session, setRole }: { go: GoFn; onClose: () => 
   );
 }
 
+// ============ SELLER APPLICATION (gated onboarding) ============
+function SellerApply({ go }: { go: GoFn }) {
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [email, setEmail] = useState("");
+  const [city, setCity] = useState("");
+  const [insta, setInsta] = useState("");
+  const [cats, setCats] = useState<string[]>([]);
+  const [why, setWhy] = useState("");
+  const [photos, setPhotos] = useState(0);
+
+  const toggleCat = (c: string) => setCats(cats.includes(c) ? cats.filter(x => x !== c) : [...cats, c]);
+  const ready = !!name.trim() && phone.length >= 10 && otp.length === 4 && !!email.trim() && !!city.trim() && !!insta.trim() && cats.length > 0 && why.trim().length >= 20;
+
+  return (
+    <Wrap>
+      <div style={{ marginBottom: 8 }}><BackBtn onClick={() => go("feed")} /></div>
+      <Screen>
+        <div style={{ padding: "24px 18px 18px", borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
+          <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", letterSpacing: "0.06em", margin: "0 0 6px" }}>seller application</p>
+          <p style={{ fontSize: 20, fontWeight: 500, margin: "0 0 6px" }}>apply to sell on jhaazi</p>
+          <p style={{ fontSize: 13, color: "var(--color-text-secondary)", margin: 0, lineHeight: 1.5 }}>we curate every seller to keep quality high for buyers. takes ~2 minutes — most applications hear back within 1–2 days.</p>
+        </div>
+
+        <div style={{ padding: "20px 16px" }}>
+          <div style={{ marginBottom: 14 }}>
+            <label style={labelStyle}>your name</label>
+            <input value={name} onChange={e => setName(e.target.value)} placeholder="full name" style={fieldStyle} />
+          </div>
+          <div style={{ marginBottom: 14 }}>
+            <label style={labelStyle}>phone</label>
+            <div style={{ display: "flex", gap: 8 }}>
+              <input value={phone} onChange={e => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))} placeholder="10-digit number" style={{ ...fieldStyle, flex: 1 }} />
+              <button onClick={() => phone.length >= 10 && setOtpSent(true)} style={{
+                padding: "0 14px", borderRadius: 8, fontSize: 12, cursor: "pointer", fontFamily: "inherit",
+                border: "0.5px solid var(--color-border-secondary)", background: "var(--color-background-primary)",
+                color: "var(--color-text-secondary)", whiteSpace: "nowrap", opacity: phone.length >= 10 ? 1 : 0.4,
+              }}>{otpSent ? "resend" : "send otp"}</button>
+            </div>
+          </div>
+          {otpSent && (
+            <div style={{ marginBottom: 14 }}>
+              <label style={labelStyle}>otp (try 1234)</label>
+              <input value={otp} onChange={e => setOtp(e.target.value.replace(/\D/g, "").slice(0, 4))} placeholder="••••" maxLength={4} style={{ ...fieldStyle, letterSpacing: "0.4em", textAlign: "center" }} />
+            </div>
+          )}
+          <div style={{ marginBottom: 14 }}>
+            <label style={labelStyle}>email</label>
+            <input value={email} onChange={e => setEmail(e.target.value)} placeholder="you@email.com" style={fieldStyle} />
+          </div>
+          <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
+            <div style={{ flex: 1 }}>
+              <label style={labelStyle}>city</label>
+              <input value={city} onChange={e => setCity(e.target.value)} placeholder="Mumbai" style={fieldStyle} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={labelStyle}>instagram</label>
+              <div style={{ position: "relative" }}>
+                <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 14, color: "var(--color-text-tertiary)" }}>@</span>
+                <input value={insta} onChange={e => setInsta(e.target.value)} placeholder="handle" style={{ ...fieldStyle, paddingLeft: 24 }} />
+              </div>
+            </div>
+          </div>
+          <div style={{ marginBottom: 14 }}>
+            <label style={labelStyle}>what you sell</label>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {["western wear", "ethnic", "vintage", "y2k", "accessories", "denim", "luxury resale"].map(c => (
+                <Chip key={c} active={cats.includes(c)} onClick={() => toggleCat(c)}>{c}</Chip>
+              ))}
+            </div>
+          </div>
+          <div style={{ marginBottom: 14 }}>
+            <label style={labelStyle}>why do you want to sell here?</label>
+            <textarea value={why} onChange={e => setWhy(e.target.value.slice(0, 240))} placeholder="tell us about your sourcing, your taste, why jhaazi..." style={{ ...fieldStyle, height: 84, resize: "none", lineHeight: 1.5 }} />
+            <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", textAlign: "right", margin: "4px 0 0" }}>{why.length} / 240 · min 20</p>
+          </div>
+          <div style={{ marginBottom: 18 }}>
+            <label style={labelStyle}>sample photos <span style={{ color: "var(--color-text-tertiary)" }}>(2–4 of pieces you'd sell)</span></label>
+            <div style={{ display: "flex", gap: 8 }}>
+              {[0, 1, 2, 3].map(i => (
+                <button key={i} onClick={() => setPhotos(Math.max(photos, i + 1))} style={{
+                  width: 60, height: 60, borderRadius: 8, cursor: "pointer", fontFamily: "inherit",
+                  border: i < photos ? "0.5px solid var(--color-border-tertiary)" : "1px dashed var(--color-border-secondary)",
+                  background: i < photos ? ["#B4B2A9", "#888780", "#CECBF6", "#F4C0D1"][i] : "var(--color-background-primary)",
+                  color: "var(--color-text-tertiary)", fontSize: 18,
+                }}>{i < photos ? "" : "+"}</button>
+              ))}
+            </div>
+          </div>
+          <button onClick={() => ready && go("sellerApplyPending")} disabled={!ready} style={{
+            width: "100%", padding: 13, borderRadius: 8, border: "none",
+            background: "var(--color-text-primary)", color: "var(--color-background-primary)",
+            fontSize: 15, fontWeight: 500, cursor: ready ? "pointer" : "not-allowed",
+            opacity: ready ? 1 : 0.3, fontFamily: "inherit",
+          }}>submit application</button>
+          <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", textAlign: "center", marginTop: 10, lineHeight: 1.5 }}>
+            we'll review and email you a private link to set up your store.
+          </p>
+        </div>
+      </Screen>
+    </Wrap>
+  );
+}
+
+function SellerApplyPending({ go, onApprove }: { go: GoFn; onApprove: () => void }) {
+  return (
+    <Wrap>
+      <div style={{ marginBottom: 8 }}><BackBtn onClick={() => go("feed")} /></div>
+      <Screen>
+        <div style={{ padding: "44px 24px 28px", textAlign: "center", borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
+          <div style={{ width: 60, height: 60, borderRadius: "50%", background: "var(--color-background-secondary)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px", fontSize: 26 }}>📨</div>
+          <p style={{ fontSize: 18, fontWeight: 500, margin: "0 0 6px" }}>application received</p>
+          <p style={{ fontSize: 13, color: "var(--color-text-secondary)", margin: "0 0 14px", lineHeight: 1.5 }}>thanks for applying. our team reviews every seller — we'll email you within 1–2 days.</p>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, padding: "6px 12px", borderRadius: 20, background: "var(--color-background-warning)", color: "var(--color-text-warning)", fontWeight: 500 }}>
+            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "currentColor" }} /> under review
+          </span>
+        </div>
+        <div style={{ padding: "20px 20px 16px" }}>
+          <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", letterSpacing: "0.05em", margin: "0 0 10px" }}>what happens next</p>
+          {[
+            ["1", "we check your insta, sourcing & sample photos"],
+            ["2", "you get an email with a private store-setup link"],
+            ["3", "set up your store, schedule your first drop"],
+          ].map(([n, t]) => (
+            <div key={n} style={{ display: "flex", gap: 12, marginBottom: 12 }}>
+              <div style={{ width: 22, height: 22, borderRadius: "50%", background: "var(--color-background-secondary)", color: "var(--color-text-secondary)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, flexShrink: 0 }}>{n}</div>
+              <p style={{ fontSize: 13, color: "var(--color-text-secondary)", margin: 0, lineHeight: 1.5 }}>{t}</p>
+            </div>
+          ))}
+        </div>
+        <div style={{ padding: "0 20px 20px" }}>
+          <button onClick={() => go("feed")} style={{
+            width: "100%", padding: 13, borderRadius: 8, fontSize: 14, fontWeight: 500, cursor: "pointer", fontFamily: "inherit",
+            border: "0.5px solid var(--color-border-secondary)", background: "none", color: "var(--color-text-primary)",
+          }}>browse drops while you wait</button>
+        </div>
+        <div style={{ borderTop: "0.5px solid var(--color-border-tertiary)", padding: "12px 20px", background: "var(--color-background-secondary)", textAlign: "center" }}>
+          <p style={{ fontSize: 10, color: "var(--color-text-tertiary)", letterSpacing: "0.05em", margin: "0 0 6px" }}>demo only</p>
+          <button onClick={onApprove} style={{
+            background: "none", border: "0.5px dashed var(--color-border-secondary)", padding: "6px 12px", borderRadius: 6,
+            fontSize: 12, color: "var(--color-text-secondary)", cursor: "pointer", fontFamily: "inherit",
+          }}>simulate approval →</button>
+        </div>
+      </Screen>
+    </Wrap>
+  );
+}
+
+function SellerApplyApproved({ go }: { go: GoFn }) {
+  return (
+    <Wrap>
+      <Screen>
+        <div style={{ padding: "44px 24px 28px", textAlign: "center", borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
+          <div style={{ width: 60, height: 60, borderRadius: "50%", background: "var(--color-background-success)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}><Check w={28} /></div>
+          <p style={{ fontSize: 20, fontWeight: 500, margin: "0 0 6px" }}>you're in</p>
+          <p style={{ fontSize: 13, color: "var(--color-text-secondary)", margin: 0, lineHeight: 1.5 }}>welcome to jhaazi. your private store-setup link is ready.</p>
+        </div>
+        <div style={{ padding: "20px 20px 12px" }}>
+          <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", letterSpacing: "0.05em", margin: "0 0 8px" }}>your invite link</p>
+          <div style={{ padding: "10px 12px", borderRadius: 8, background: "var(--color-background-secondary)", border: "0.5px solid var(--color-border-tertiary)", fontSize: 12, color: "var(--color-text-secondary)", fontFamily: "ui-monospace, monospace", wordBreak: "break-all" }}>
+            jhaazi.com/seller/setup?invite=jp-x7q2
+          </div>
+          <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", margin: "8px 0 0", lineHeight: 1.5 }}>also sent to your email. link expires in 7 days.</p>
+        </div>
+        <div style={{ padding: "16px 20px 24px" }}>
+          <button onClick={() => go("sellerProfile")} style={{
+            width: "100%", padding: 13, borderRadius: 8, border: "none",
+            background: "var(--color-text-primary)", color: "var(--color-background-primary)",
+            fontSize: 15, fontWeight: 500, cursor: "pointer", fontFamily: "inherit",
+          }}>create your store →</button>
+          <button onClick={() => go("dashboard")} style={{
+            width: "100%", padding: 12, borderRadius: 8, marginTop: 8, fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: "inherit",
+            border: "0.5px solid var(--color-border-secondary)", background: "none", color: "var(--color-text-primary)",
+          }}>skip · go to dashboard</button>
+        </div>
+      </Screen>
+    </Wrap>
+  );
+}
+
 // ============ MY FOLLOWS (placeholder) ============
 function MyFollows({ go }: { go: GoFn }) {
   return (
