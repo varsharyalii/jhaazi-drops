@@ -150,8 +150,29 @@ function App() {
           }}>
             <div style={{ width: 36, height: 4, background: "var(--color-border-tertiary)", borderRadius: 2, margin: "4px auto 16px" }} />
             <div style={{ padding: "0 18px" }}>
-              <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", letterSpacing: "0.06em", margin: "0 0 8px" }}>navigate</p>
+              <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", letterSpacing: "0.06em", margin: "0 0 8px" }}>view as</p>
+              <div style={{ display: "flex", gap: 6, marginBottom: 4 }}>
+                {(["guest", "buyer", "seller"] as Role[]).map(r => {
+                  const active = session.role === r;
+                  return (
+                    <button key={r} onClick={() => setRole(r)} style={{
+                      flex: 1, padding: "8px 6px", borderRadius: 8, fontSize: 12, fontFamily: "inherit", cursor: "pointer",
+                      border: "0.5px solid " + (active ? "var(--color-text-primary)" : "var(--color-border-secondary)"),
+                      background: active ? "var(--color-text-primary)" : "var(--color-background-primary)",
+                      color: active ? "var(--color-background-primary)" : "var(--color-text-secondary)",
+                      fontWeight: active ? 500 : 400,
+                    }}>{r}</button>
+                  );
+                })}
+              </div>
+
+              <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", letterSpacing: "0.06em", margin: "18px 0 8px" }}>navigate</p>
               <button onClick={() => go("landing")} style={jumpItemStyle(screen === "landing")}>landing</button>
+
+              <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", letterSpacing: "0.06em", margin: "18px 0 8px" }}>seller onboarding</p>
+              {onboardingScreens.map(s => (
+                <button key={s.id} onClick={() => go(s.id)} style={jumpItemStyle(screen === s.id)}>{s.label}</button>
+              ))}
 
               <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", letterSpacing: "0.06em", margin: "18px 0 8px" }}>seller flow</p>
               {sellerScreens.map(s => (
