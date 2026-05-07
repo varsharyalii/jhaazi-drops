@@ -564,11 +564,11 @@ function Landing({ go }: { go: GoFn }) {
           </p>
         </div>
         <div style={{ padding: 24 }}>
-          <button onClick={() => go("sellerProfile")} style={{
+          <button onClick={() => go("sellerApply")} style={{
             width: "100%", padding: 16, borderRadius: 10, border: "none",
             background: "var(--color-text-primary)", color: "var(--color-background-primary)",
             fontSize: 15, fontWeight: 500, cursor: "pointer", fontFamily: "inherit", marginBottom: 12,
-          }}>i'm a seller →</button>
+          }}>apply to sell →</button>
           <button onClick={() => go("feed")} style={{
             width: "100%", padding: 16, borderRadius: 10,
             border: "0.5px solid var(--color-border-secondary)", background: "none",
