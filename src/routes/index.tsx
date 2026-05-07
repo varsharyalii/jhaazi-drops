@@ -7,8 +7,11 @@ export const Route = createFileRoute("/")({ component: App });
 type Screen =
   | "landing"
   | "feed" | "drop" | "item" | "claimHold" | "signup" | "booking" | "missed" | "follow" | "myfollows" | "sellerStore"
+  | "sellerApply" | "sellerApplyPending" | "sellerApplyApproved"
   | "sellerProfile" | "createDrop" | "addItem" | "dropPreview" | "shareDrop" | "dashboard";
 
+type Role = "guest" | "buyer" | "seller";
+type Session = { role: Role; name?: string; sellerApproved?: boolean };
 type GoFn = (s: Screen) => void;
 
 // screens that show the global top nav bar (buyer-facing browse surfaces)
