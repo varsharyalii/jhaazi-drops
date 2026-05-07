@@ -290,7 +290,7 @@ function TopBar({ onMenu, onLogo }: { onMenu: () => void; onLogo: () => void }) 
   );
 }
 
-function SideMenu({ go, onClose }: { go: GoFn; onClose: () => void }) {
+function SideMenu({ go, onClose, session, setRole }: { go: GoFn; onClose: () => void; session: Session; setRole: (r: Role) => void }) {
   const item = (label: string, sub: string, onClick: () => void) => (
     <button onClick={onClick} style={{
       display: "block", width: "100%", textAlign: "left", padding: "14px 0",
@@ -301,22 +301,44 @@ function SideMenu({ go, onClose }: { go: GoFn; onClose: () => void }) {
       <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", margin: 0 }}>{sub}</p>
     </button>
   );
+  const role = session.role;
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", zIndex: 80 }}>
       <div onClick={e => e.stopPropagation()} style={{
         position: "absolute", top: 0, right: 0, height: "100%", width: 280, maxWidth: "85%",
-        background: "var(--color-background-primary)", padding: "20px 20px 24px", display: "flex", flexDirection: "column",
+        background: "var(--color-background-primary)", padding: "20px 20px 24px", display: "flex", flexDirection: "column", overflowY: "auto",
       }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
           <span style={{ fontSize: 16, fontWeight: 500 }}>menu</span>
           <button onClick={onClose} style={{ background: "none", border: "none", fontSize: 18, color: "var(--color-text-tertiary)", cursor: "pointer" }}>×</button>
         </div>
-        <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", letterSpacing: "0.06em", margin: "0 0 4px" }}>browse</p>
-        {item("drops", "all live & upcoming drops", () => go("feed"))}
-        {item("my follows", "sellers you follow", () => go("myfollows"))}
-        <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", letterSpacing: "0.06em", margin: "20px 0 4px" }}>account</p>
-        {item("sign up / log in", "save your follows & orders", () => go("signup"))}
-        {item("become a seller", "open your own store", () => go("sellerProfile"))}
+        <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", margin: "0 0 14px" }}>signed in as <span style={{ color: "var(--color-text-secondary)", fontWeight: 500 }}>{role}</span></p>
+
+        {role === "seller" ? (
+          <>
+            <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", letterSpacing: "0.06em", margin: "0 0 4px" }}>your store</p>
+            {item("dashboard", "live drop, orders, followers", () => go("dashboard"))}
+            {item("create new drop", "set up your next drop", () => go("createDrop"))}
+            {item("my drops", "history of past drops", () => go("dashboard"))}
+            {item("orders to ship", "buyers waiting on you", () => go("dashboard"))}
+            {item("my profile", "edit your storefront", () => go("sellerProfile"))}
+            <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", letterSpacing: "0.06em", margin: "20px 0 4px" }}>account</p>
+            {item("switch to buyer view", "browse drops as a buyer", () => setRole("buyer"))}
+            {item("sign out", "back to guest", () => setRole("guest"))}
+          </>
+        ) : (
+          <>
+            <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", letterSpacing: "0.06em", margin: "0 0 4px" }}>browse</p>
+            {item("drops", "all live & upcoming drops", () => go("feed"))}
+            {item("my follows", "sellers you follow", () => go("myfollows"))}
+            {role === "buyer" && item("my orders", "track your purchases", () => go("myfollows"))}
+            <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", letterSpacing: "0.06em", margin: "20px 0 4px" }}>account</p>
+            {role === "guest"
+              ? item("sign up / log in", "save your follows & orders", () => go("signup"))
+              : item("sign out", "back to guest", () => setRole("guest"))}
+            {item("become a seller", "apply to open a store", () => go("sellerApply"))}
+          </>
+        )}
       </div>
     </div>
   );
