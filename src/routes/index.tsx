@@ -124,7 +124,7 @@ function App() {
         {screen === "shareDrop" && <ShareDrop go={go} />}
         {screen === "dashboard" && <SellerDashboard go={go} />}
         {screen === "sellerOrders" && <SellerOrders go={go} />}
-        {screen === "sellerTracking" && <SellerTracking go={go} ownerView />}
+        {screen === "sellerTracking" && <SellerTracking go={go} ownerView={session.role === "seller"} />}
       </div>
 
       {menuOpen && <SideMenu go={go} onClose={() => setMenuOpen(false)} session={session} setRole={setRole} />}
