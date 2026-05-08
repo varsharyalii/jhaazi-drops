@@ -76,11 +76,13 @@ function App() {
   ];
   const sellerScreens: { id: Screen; label: string }[] = [
     { id: "dashboard", label: "1 · seller dashboard (home)" },
-    { id: "sellerProfile", label: "2 · store setup" },
-    { id: "createDrop", label: "3 · create drop" },
-    { id: "addItem", label: "4 · add item" },
-    { id: "dropPreview", label: "5 · drop preview" },
-    { id: "shareDrop", label: "6 · share drop link" },
+    { id: "sellerOrders", label: "2 · orders & shipping" },
+    { id: "sellerTracking", label: "3 · tracking ids" },
+    { id: "sellerProfile", label: "4 · store setup" },
+    { id: "createDrop", label: "5 · create drop" },
+    { id: "addItem", label: "6 · add item" },
+    { id: "dropPreview", label: "7 · drop preview" },
+    { id: "shareDrop", label: "8 · share drop link" },
   ];
   const buyerScreens: { id: Screen; label: string }[] = [
     { id: "feed", label: "1 · marketplace feed" },
