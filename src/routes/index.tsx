@@ -75,7 +75,7 @@ function App() {
   return (
     <div style={{ minHeight: "100vh", background: "var(--color-background-secondary)", paddingBottom: 80 }}>
       {showTopBar && <TopBar onMenu={() => setMenuOpen(true)} onLogo={() => go("feed")} />}
-      <div style={{ paddingTop: showTopBar ? 0 : 12 }}>
+      <div style={{ paddingTop: 0 }}>
         {screen === "landing" && <Landing go={go} />}
         {screen === "feed" && <Feed go={go} followingSeller={followingSeller} setFollowingSeller={setFollowingSeller} />}
         {screen === "drop" && <DropLanding go={go} followingSeller={followingSeller} setFollowingSeller={setFollowingSeller} />}
@@ -162,10 +162,10 @@ function BackBtn({ onClick }: { onClick: () => void }) {
 }
 
 const Wrap = ({ children }: { children: React.ReactNode }) => (
-  <div style={{ background: "var(--color-background-secondary)", borderRadius: 14, padding: 16, maxWidth: 390, margin: "0 auto" }}>{children}</div>
+  <div style={{ background: "transparent", borderRadius: 0, padding: 0, maxWidth: 390, margin: "0 auto" }}>{children}</div>
 );
 const Screen = ({ children }: { children: React.ReactNode }) => (
-  <div style={{ background: "var(--color-background-primary)", borderRadius: 14, border: "0.5px solid var(--color-border-tertiary)", overflow: "hidden" }}>{children}</div>
+  <div style={{ background: "var(--color-background-primary)", borderRadius: 0, border: "none", overflow: "hidden" }}>{children}</div>
 );
 
 const fieldStyle: React.CSSProperties = {
@@ -202,18 +202,18 @@ const StepBars = ({ active, total = 3 }: { active: number; total?: number }) => 
 // underline tab row — used in place of rounded filter chips (information surfaces only)
 function Tabs<T extends string>({ items, value, onChange }: { items: { id: T; label: string; count?: number }[]; value: T; onChange: (v: T) => void }) {
   return (
-    <div style={{ display: "flex", gap: 18, overflowX: "auto", borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
+    <div style={{ display: "flex", gap: 18, overflowX: "auto", borderBottom: "0.5px solid var(--color-border-tertiary)", padding: "0 16px" }}>
       {items.map(it => {
         const active = value === it.id;
         return (
           <button key={it.id} onClick={() => onChange(it.id)} style={{
             background: "none", border: "none", padding: "10px 0", cursor: "pointer", fontFamily: "inherit",
             fontSize: 13, fontWeight: active ? 500 : 400, whiteSpace: "nowrap",
-            color: active ? "var(--color-text-primary)" : "var(--color-text-tertiary)",
+            color: active ? "var(--color-text-primary)" : "var(--color-text-secondary)",
             borderBottom: "1.5px solid " + (active ? "var(--color-text-primary)" : "transparent"),
             marginBottom: -0.5,
           }}>
-            {it.label}{typeof it.count === "number" && <span style={{ color: "var(--color-text-tertiary)", marginLeft: 4, fontWeight: 400 }}>{it.count}</span>}
+            {it.label}{typeof it.count === "number" && <span style={{ color: "var(--color-text-secondary)", marginLeft: 4, fontWeight: 400 }}>{it.count}</span>}
           </button>
         );
       })}
@@ -305,9 +305,9 @@ function Landing({ go }: { go: GoFn }) {
   return (
     <Wrap>
       <Screen>
-        <div style={{ padding: "44px 24px 28px", textAlign: "center", borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
-          <p style={{ fontSize: 28, fontWeight: 500, margin: "0 0 8px", letterSpacing: "-0.01em" }}>jhaazi</p>
-          <p style={{ fontSize: 14, color: "var(--color-text-secondary)", margin: 0, lineHeight: 1.5 }}>
+        <div style={{ padding: "64px 24px 32px", textAlign: "center", borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
+          <p style={{ fontSize: 28, fontWeight: 500, margin: "0 0 10px", letterSpacing: "-0.01em" }}>jhaazi</p>
+          <p style={{ fontSize: 14, color: "var(--color-text-secondary)", margin: 0, lineHeight: 1.6 }}>
             social commerce for thrift sellers in india
           </p>
         </div>
@@ -344,15 +344,15 @@ function SellerProfile({ go }: { go: GoFn }) {
 
   return (
     <Wrap>
-      <div style={{ marginBottom: 8 }}><BackBtn onClick={() => go("landing")} /></div>
+      <div style={{ marginBottom: 0, padding: "12px 16px 8px" }}><BackBtn onClick={() => go("landing")} /></div>
       <Screen>
         <div style={{ padding: "16px 16px 0", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <span style={{ fontSize: 16, fontWeight: 500 }}>jhaazi</span>
           <StepBars active={1} />
         </div>
-        <div style={{ padding: "24px 16px 20px", borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
-          <p style={{ fontSize: 20, fontWeight: 500, margin: "0 0 4px" }}>set up your store</p>
-          <p style={{ fontSize: 13, color: "var(--color-text-secondary)", margin: 0, lineHeight: 1.5 }}>this is your page on jhaazi — your buyers will see this every time you drop.</p>
+        <div style={{ padding: "28px 16px 22px", borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
+          <p style={{ fontSize: 22, fontWeight: 500, margin: "0 0 6px", letterSpacing: "-0.01em" }}>set up your store</p>
+          <p style={{ fontSize: 13, color: "var(--color-text-secondary)", margin: 0, lineHeight: 1.6 }}>this is your page on jhaazi — your buyers will see this every time you drop.</p>
         </div>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "24px 16px 16px", borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
           <div onClick={() => setPhoto(true)} style={{
@@ -695,15 +695,15 @@ function DropPreview({ go }: { go: GoFn }) {
 
   return (
     <Wrap>
-      <div style={{ marginBottom: 8 }}><BackBtn onClick={() => go("createDrop")} /></div>
+      <div style={{ marginBottom: 0, padding: "12px 16px 8px" }}><BackBtn onClick={() => go("createDrop")} /></div>
       <Screen>
         <div style={{ background: "var(--color-background-warning)", padding: "10px 14px", display: "flex", alignItems: "center", gap: 8 }}>
           <p style={{ fontSize: 12, color: "var(--color-text-warning)", margin: 0, flex: 1, lineHeight: 1.4 }}>this is exactly what your buyers will see — check everything before you go live</p>
           <span onClick={() => go("createDrop")} style={{ fontSize: 12, color: "var(--color-text-warning)", fontWeight: 500, cursor: "pointer", textDecoration: "underline" }}>edit</span>
         </div>
 
-        <div style={{ padding: "20px 16px 16px", borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+        <div style={{ padding: "24px 16px 16px", borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
             <div style={{ width: 38, height: 38, borderRadius: "50%", background: "#E1F5EE", color: "#085041", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 500 }}>JP</div>
             <div style={{ flex: 1 }}>
               <p style={{ fontSize: 14, fontWeight: 500, margin: "0 0 1px" }}>jhaazi_picks</p>
@@ -711,7 +711,7 @@ function DropPreview({ go }: { go: GoFn }) {
             </div>
             <button style={{ fontSize: 12, padding: "6px 14px", borderRadius: 20, border: "0.5px solid var(--color-border-secondary)", background: "none", color: "var(--color-text-tertiary)", cursor: "default" }}>+ follow</button>
           </div>
-          <p style={{ fontSize: 20, fontWeight: 500, margin: "0 0 8px" }}>{dropName}</p>
+          <p style={{ fontSize: 22, fontWeight: 500, margin: "0 0 10px", letterSpacing: "-0.02em" }}>{dropName}</p>
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
             {isScheduled
               ? <span style={{ fontSize: 11, padding: "4px 10px", borderRadius: 20, background: "var(--color-background-warning)", color: "var(--color-text-warning)", fontWeight: 500 }}>drops {dropState.date} {dropState.time}</span>
@@ -805,9 +805,9 @@ function ShareDrop({ go }: { go: GoFn }) {
           <span style={{ fontSize: 14, fontWeight: 500 }}>share your drop</span>
         </div>
 
-        <div style={{ padding: "24px 20px 20px", textAlign: "center", borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
+        <div style={{ padding: "32px 20px 24px", textAlign: "center", borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
           <div style={{
-            width: 52, height: 52, borderRadius: "50%", margin: "0 auto 14px",
+            width: 56, height: 56, borderRadius: "50%", margin: "0 auto 18px",
             display: "flex", alignItems: "center", justifyContent: "center",
             background: mode === "live" ? "var(--color-background-success)" : "var(--color-background-warning)",
           }}>
@@ -991,9 +991,9 @@ function SellerDashboard({ go }: { go: GoFn }) {
   return (
     <Wrap>
       <Screen>
-        <div style={{ padding: "14px 16px", display: "flex", alignItems: "center", gap: 10, borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
+        <div style={{ padding: "16px 16px", display: "flex", alignItems: "center", gap: 10, borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
           <div style={{ flex: 1 }}>
-            <p style={{ fontSize: 14, fontWeight: 500, margin: "0 0 2px" }}>{dropState.name || "Summer Stories"}</p>
+            <p style={{ fontSize: 16, fontWeight: 500, margin: "0 0 3px", letterSpacing: "-0.01em" }}>{dropState.name || "Summer Stories"}</p>
             <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", margin: 0 }}>{ended ? "drop ended" : `live for ${elapsed}`}</p>
           </div>
           {ended ? (
@@ -1100,10 +1100,46 @@ const Stat = ({ label, value }: { label: string; value: string }) => (
 type Drop = { id: string; seller: string; handle: string; avBg: string; avFg: string; init: string; name: string; status: "live" | "soon" | "sold"; soonText?: string; previews: string[]; left?: number; total?: number; price: string; sub?: string };
 
 const DROPS: Drop[] = [
-  { id: "1", seller: "jhaazi_picks", handle: "@jhaazi_picks", avBg: "#E1F5EE", avFg: "#085041", init: "JP", name: "Summer Stories", status: "live", previews: ["#D3D1C7", "#B4B2A9", "#888780"], left: 5, price: "₹600–₹1,400" },
-  { id: "2", seller: "secondhand_ria", handle: "@secondhand_ria", avBg: "#FBEAF0", avFg: "#72243E", init: "SR", name: "Vintage Bombay Edit", status: "live", previews: ["#F4C0D1", "#ED93B1", "#D4537E"], left: 8, price: "₹400–₹1,100" },
-  { id: "3", seller: "thrift_by_kavya", handle: "@thrift_by_kavya", avBg: "#EEEDFE", avFg: "#3C3489", init: "TK", name: "Y2K Drop No. 4", status: "soon", soonText: "in 2h", previews: ["#CECBF6", "#AFA9EC", "#7F77DD"], total: 10, price: "₹500–₹2,000" },
-  { id: "4", seller: "nomad_vintage", handle: "@nomad_vintage", avBg: "#FAEEDA", avFg: "#633806", init: "NV", name: "Monsoon Grunge", status: "sold", previews: ["#FAC775", "#EF9F27", "#BA7517"], sub: "all gone · 47 min ago", price: "" },
+  { id: "1", seller: "jhaazi_picks", handle: "@jhaazi_picks", avBg: "#E1F5EE", avFg: "#085041", init: "JP", name: "Summer Stories", status: "live",
+    previews: [
+      "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=300&q=80",
+      "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=300&q=80",
+      "https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&w=300&q=80",
+      "https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=300&q=80",
+      "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?auto=format&fit=crop&w=300&q=80",
+      "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=300&q=80",
+      "https://images.unsplash.com/photo-1483985988-d22aee46e519?auto=format&fit=crop&w=300&q=80",
+    ], left: 5, price: "₹600–₹1,400" },
+  { id: "2", seller: "secondhand_ria", handle: "@secondhand_ria", avBg: "#FBEAF0", avFg: "#72243E", init: "SR", name: "Vintage Bombay Edit", status: "live",
+    previews: [
+      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=300&q=80",
+      "https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=300&q=80",
+      "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?auto=format&fit=crop&w=300&q=80",
+      "https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=300&q=80",
+      "https://images.unsplash.com/photo-1525507119028-ed4c629a60a3?auto=format&fit=crop&w=300&q=80",
+      "https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=300&q=80",
+      "https://images.unsplash.com/photo-1485230895905-ec40ba36b9bc?auto=format&fit=crop&w=300&q=80",
+    ], left: 8, price: "₹400–₹1,100" },
+  { id: "3", seller: "thrift_by_kavya", handle: "@thrift_by_kavya", avBg: "#EEEDFE", avFg: "#3C3489", init: "TK", name: "Y2K Drop No. 4", status: "soon", soonText: "in 2h",
+    previews: [
+      "https://images.unsplash.com/photo-1525507119028-ed4c629a60a3?auto=format&fit=crop&w=300&q=80",
+      "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=300&q=80",
+      "https://images.unsplash.com/photo-1483985988-d22aee46e519?auto=format&fit=crop&w=300&q=80",
+      "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=300&q=80",
+      "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=300&q=80",
+      "https://images.unsplash.com/photo-1506629905607-d9d297d7dc66?auto=format&fit=crop&w=300&q=80",
+      "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=300&q=80",
+    ], total: 10, price: "₹500–₹2,000" },
+  { id: "4", seller: "nomad_vintage", handle: "@nomad_vintage", avBg: "#FAEEDA", avFg: "#633806", init: "NV", name: "Monsoon Grunge", status: "sold",
+    previews: [
+      "https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?auto=format&fit=crop&w=300&q=80",
+      "https://images.unsplash.com/photo-1583744946564-b52ac1c389c8?auto=format&fit=crop&w=300&q=80",
+      "https://images.unsplash.com/photo-1578587018452-892bacefd3f2?auto=format&fit=crop&w=300&q=80",
+      "https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&w=300&q=80",
+      "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&w=300&q=80",
+      "https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?auto=format&fit=crop&w=300&q=80",
+      "https://images.unsplash.com/photo-1583391733956-6c78276477e2?auto=format&fit=crop&w=300&q=80",
+    ], sub: "all gone · 47 min ago", price: "" },
 ];
 
 function Feed({ go, followingSeller, setFollowingSeller }: { go: GoFn; followingSeller: boolean; setFollowingSeller: (v: boolean) => void }) {
@@ -1143,7 +1179,7 @@ function Feed({ go, followingSeller, setFollowingSeller }: { go: GoFn; following
         value={filter}
         onChange={setFilter}
       />
-      <div style={{ height: 14 }} />
+      <div style={{ height: 0 }} />
       {visible.length === 0 && (
         <div style={{ padding: "32px 16px", textAlign: "center", color: "var(--color-text-tertiary)", fontSize: 13 }}>
           nothing here yet.
@@ -1158,59 +1194,170 @@ function Feed({ go, followingSeller, setFollowingSeller }: { go: GoFn; following
 
 function DropCard({ d, followed, onFollow, onView, onSeller }: { d: Drop; followed: boolean; onFollow: () => void; onView: () => void; onSeller: () => void }) {
   const isSold = d.status === "sold";
+  const [activePhoto, setActivePhoto] = useState<number | null>(null);
+  const [hoveredPhoto, setHoveredPhoto] = useState<number | null>(null);
+  const visiblePreviews = d.previews.slice(0, 3);
+  const hiddenPreviews = d.previews.slice(3, 7);
+
+  const handlePhotoClick = (i: number) => {
+    if (isSold) return;
+    setActivePhoto(prev => prev === i ? null : i);
+  };
+
   return (
     <div style={{
       background: "var(--color-background-primary)",
-      border: "0.5px solid " + (followed && !isSold ? "var(--color-border-success)" : "var(--color-border-tertiary)"),
-      borderRadius: 14, padding: 12, marginBottom: 10, opacity: isSold ? 0.45 : 1,
+      borderBottom: "0.5px solid var(--color-border-tertiary)",
+      boxShadow: followed && !isSold ? "inset 3px 0 0 var(--color-border-success)" : "none",
+      borderRadius: 0, padding: "16px 16px 14px", marginBottom: 0, opacity: isSold ? 0.45 : 1,
     }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-        <button onClick={onSeller} style={{ display: "flex", alignItems: "center", gap: 8, background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "inherit", textAlign: "left" }}>
-          <div style={{ width: 32, height: 32, borderRadius: "50%", background: d.avBg, color: d.avFg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 500 }}>{d.init}</div>
-          <div>
-            <p style={{ fontSize: 13, fontWeight: 500, margin: 0 }}>{d.seller}</p>
-            <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", margin: 0 }}>{d.handle}</p>
+
+      {/* Row 1: Avatar + Drop name/status + follow action */}
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 12 }}>
+        <button onClick={onSeller} aria-label={`view ${d.seller} store`} style={{ width: 34, height: 34, borderRadius: "50%", background: d.avBg, color: d.avFg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 500, flexShrink: 0, marginTop: 1, border: "none", padding: 0, cursor: "pointer", fontFamily: "inherit" }}>{d.init}</button>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: 4, minWidth: 0, minHeight: 18 }}>
+            <p style={{ fontSize: 16, fontWeight: 600, margin: 0, letterSpacing: "-0.01em", lineHeight: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", minWidth: 0 }}>{d.name}</p>
+            {d.status === "live" && (
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, color: "var(--color-text-danger)", fontWeight: 700, lineHeight: 1, flexShrink: 0, transform: "translateY(0.5px)" }}>
+                <span className="j-pulse" style={{ width: 4, height: 4, borderRadius: "50%", background: "var(--color-text-danger)", flexShrink: 0 }} />
+                live
+              </span>
+            )}
+            {d.status === "soon" && (
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, color: "var(--color-text-warning)", fontWeight: 600, lineHeight: 1, flexShrink: 0, transform: "translateY(0.5px)" }}>
+                <span style={{ width: 4, height: 4, borderRadius: "50%", background: "var(--color-text-warning)", flexShrink: 0 }} />
+                {d.soonText}
+              </span>
+            )}
+            {isSold && (
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, color: "var(--color-text-tertiary)", fontWeight: 600, lineHeight: 1, flexShrink: 0, transform: "translateY(0.5px)" }}>
+                <span style={{ width: 4, height: 4, borderRadius: "50%", background: "var(--color-text-tertiary)", flexShrink: 0 }} />
+                sold out
+              </span>
+            )}
           </div>
-        </button>
-        {isSold ? (
-          <span style={{ marginLeft: "auto", fontSize: 10, padding: "3px 8px", borderRadius: 20, background: "var(--color-background-secondary)", color: "var(--color-text-tertiary)", fontWeight: 500 }}>sold out</span>
-        ) : (
-          <button onClick={onFollow} style={{
-            marginLeft: "auto", fontSize: 11, padding: "4px 10px", borderRadius: 20,
-            border: "0.5px solid " + (followed ? "var(--color-border-success)" : "var(--color-border-secondary)"),
-            background: followed ? "var(--color-background-success)" : "transparent",
-            color: followed ? "var(--color-text-success)" : "var(--color-text-secondary)",
-            cursor: "pointer", fontFamily: "inherit",
-          }}>{followed ? "following" : "+ follow"}</button>
-        )}
+          <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", margin: 0 }}>{d.handle}</p>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 5, flexShrink: 0 }}>
+          {!isSold && (
+            <button onClick={onFollow} style={{
+              fontSize: 11, padding: "4px 10px", borderRadius: 20,
+              border: "0.5px solid " + (followed ? "var(--color-border-success)" : "var(--color-border-secondary)"),
+              background: followed ? "var(--color-background-success)" : "transparent",
+              color: followed ? "var(--color-text-success)" : "var(--color-text-secondary)",
+              cursor: "pointer", fontFamily: "inherit",
+            }}>{followed ? "following" : "+ follow"}</button>
+          )}
+        </div>
       </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-        <p style={{ fontSize: 14, fontWeight: 500, margin: 0, flex: 1 }}>{d.name}</p>
-        {d.status === "live" && <span style={{ fontSize: 10, padding: "3px 8px", borderRadius: 20, background: "var(--color-background-danger)", color: "var(--color-text-danger)", fontWeight: 500 }}>live</span>}
-        {d.status === "soon" && <span style={{ fontSize: 10, padding: "3px 8px", borderRadius: 20, background: "var(--color-background-warning)", color: "var(--color-text-warning)", fontWeight: 500 }}>{d.soonText}</span>}
+
+      {/* Row 2: Interactive image grid — full-width, portrait 3:4 */}
+      <div style={{ display: "flex", gap: 4, marginBottom: 12 }}>
+        {visiblePreviews.map((src, i) => (
+          <div
+            key={i}
+            onClick={() => handlePhotoClick(i)}
+            onMouseEnter={() => setHoveredPhoto(i)}
+            onMouseLeave={() => setHoveredPhoto(null)}
+            style={{
+              flex: i === 0 ? 1.6 : 1,
+              aspectRatio: "3/4",
+              borderRadius: 8,
+              backgroundImage: `url(${src})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              backgroundColor: "var(--color-background-tertiary)",
+              cursor: isSold ? "default" : "pointer",
+              transition: "transform 0.15s ease, box-shadow 0.15s ease",
+              transform: hoveredPhoto === i && !isSold ? "scale(1.03)" : "scale(1)",
+              boxShadow: activePhoto === i ? "0 0 0 2.5px var(--color-text-primary)" : hoveredPhoto === i && !isSold ? "0 3px 10px rgba(0,0,0,0.15)" : "none",
+              position: "relative",
+              overflow: "hidden",
+            }}
+          />
+        ))}
+        <div
+          onClick={!isSold ? onView : undefined}
+          onMouseEnter={() => setHoveredPhoto(99)}
+          onMouseLeave={() => setHoveredPhoto(null)}
+          style={{
+            flex: 1,
+            aspectRatio: "3/4",
+            borderRadius: 8,
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gridTemplateRows: "1fr 1fr",
+            gap: 1,
+            cursor: isSold ? "default" : "pointer",
+            background: "var(--color-background-tertiary)",
+            position: "relative",
+            overflow: "hidden",
+          }}
+        >
+          {hiddenPreviews.map((src, i) => (
+            <div key={i} style={{
+              backgroundImage: `url(${src})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              minWidth: 0,
+            }} />
+          ))}
+          <div style={{
+            position: "absolute", inset: 0,
+            background: hoveredPhoto === 99 && !isSold ? "rgba(0,0,0,0.52)" : "rgba(0,0,0,0.62)",
+            transition: "background 0.15s ease",
+          }} />
+          <span style={{
+            position: "absolute", inset: 0,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            color: "white", fontSize: 14, fontWeight: 700, lineHeight: 1,
+          }}>+4</span>
+        </div>
       </div>
-      <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
-        {d.previews.map((c, i) => <div key={i} style={{ flex: 1, aspectRatio: "1", borderRadius: 6, background: c, maxWidth: 72 }} />)}
-        <div style={{ flex: 1, aspectRatio: "1", borderRadius: 6, background: "var(--color-background-secondary)", border: "0.5px solid var(--color-border-tertiary)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: "var(--color-text-tertiary)", maxWidth: 72 }}>+4</div>
-      </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+
+      {/* Row 3: [price] ——— [5 left] [view drop] */}
+      <div style={{ display: "flex", alignItems: "center", minHeight: 32 }}>
         {isSold ? (
           <span style={{ fontSize: 11, color: "var(--color-text-tertiary)" }}>{d.sub}</span>
         ) : (
           <>
-            <span style={{ fontSize: 11, color: "var(--color-text-tertiary)" }}><span style={{ color: "var(--color-text-secondary)", fontWeight: 500 }}>{d.left ?? d.total}</span> {d.left ? "left" : "items"}</span>
-            <span style={{ fontSize: 11, color: "var(--color-text-secondary)", fontWeight: 500 }}>{d.price}</span>
-            {d.status === "live" ? (
-              <button onClick={onView} style={{ marginLeft: "auto", fontSize: 12, padding: "6px 14px", borderRadius: 8, background: "var(--color-text-primary)", color: "var(--color-background-primary)", border: "none", cursor: "pointer", fontFamily: "inherit" }}>view drop ↗</button>
-            ) : (
-              <button onClick={onFollow} style={{
-                marginLeft: "auto", fontSize: 12, padding: "6px 14px", borderRadius: 20,
-                border: "0.5px solid " + (followed ? "var(--color-border-success)" : "var(--color-border-secondary)"),
-                background: followed ? "var(--color-background-success)" : "transparent",
-                color: followed ? "var(--color-text-success)" : "var(--color-text-secondary)",
-                cursor: "pointer", fontFamily: "inherit",
-              }}>{followed ? "reminding ✓" : "remind me"}</button>
+            {/* Left: price */}
+            {d.price && (
+              <span style={{ fontSize: 13, color: "var(--color-text-primary)", fontWeight: 600, lineHeight: 1 }}>{d.price}</span>
             )}
+            {!d.price && d.total !== undefined && (
+              <span style={{ fontSize: 12, color: "var(--color-text-secondary)", fontWeight: 600, lineHeight: 1 }}>{d.total} items</span>
+            )}
+
+            {/* Spacer */}
+            <div style={{ flex: 1 }} />
+
+            {/* Right cluster: [5 left] [view drop] */}
+            <div style={{ display: "flex", alignItems: "center", gap: 8, minHeight: 32 }}>
+              {d.left !== undefined && (
+                <span style={{
+                  fontSize: 12, fontWeight: 700, lineHeight: 1,
+                  color: "var(--color-text-danger)",
+                  whiteSpace: "nowrap",
+                }}>{d.left} left</span>
+              )}
+              {d.status === "live" ? (
+                <button onClick={onView} style={{
+                  height: 32, fontSize: 12, fontWeight: 600, padding: "0 14px", borderRadius: 8,
+                  background: "var(--color-text-primary)", color: "var(--color-background-primary)",
+                  border: "none", cursor: "pointer", fontFamily: "inherit", lineHeight: 1,
+                }}>view drop ↗</button>
+              ) : (
+                <button onClick={onFollow} style={{
+                  height: 32, fontSize: 12, padding: "0 14px", borderRadius: 20,
+                  border: "0.5px solid " + (followed ? "var(--color-border-success)" : "var(--color-border-secondary)"),
+                  background: followed ? "var(--color-background-success)" : "transparent",
+                  color: followed ? "var(--color-text-success)" : "var(--color-text-secondary)",
+                  cursor: "pointer", fontFamily: "inherit", lineHeight: 1,
+                }}>{followed ? "reminding ✓" : "remind me"}</button>
+              )}
+            </div>
           </>
         )}
       </div>
@@ -1220,13 +1367,13 @@ function DropCard({ d, followed, onFollow, onView, onSeller }: { d: Drop; follow
 
 // ============ BUYER 2 — DROP LANDING ============
 const ITEMS = [
-  { id: "i1", name: "Floral midi dress", price: "₹850", tag: "S · excellent", cat: "western", status: "available", color: "#B4B2A9" },
-  { id: "i2", name: "Levi's 501 jeans", price: "₹1,200", tag: "W28 · good", cat: "western", status: "gone", color: "#D3D1C7" },
-  { id: "i3", name: "Vintage blazer", price: "₹1,100", tag: "M · excellent", cat: "western", status: "available", color: "#888780" },
-  { id: "i4", name: "Embroidered kurta", price: "₹650", tag: "S · like new", cat: "ethnic", status: "available", color: "#F4C0D1" },
-  { id: "i5", name: "Silk anarkali", price: "₹900", tag: "M · good", cat: "ethnic", status: "gone", color: "#ED93B1" },
-  { id: "i6", name: "Oversized white shirt", price: "₹600", tag: "L · excellent", cat: "western", status: "available", color: "#5F5E5A" },
-  { id: "i7", name: "Y2K cargo pants", price: "₹1,400", tag: "S/M · like new", cat: "western", status: "available", color: "#CECBF6" },
+  { id: "i1", name: "Floral midi dress",     price: "₹850",   tag: "S · excellent",  cat: "western", status: "available", color: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=300&q=80", measurements: [["bust", "34"], ["waist", "28"], ["length", "42"]] },
+  { id: "i2", name: "Levi's 501 jeans",      price: "₹1,200", tag: "W28 · good",      cat: "western", status: "gone",      color: "https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&w=300&q=80", measurements: [["waist", "28"], ["rise", "11"], ["inseam", "30"]] },
+  { id: "i3", name: "Vintage blazer",        price: "₹1,100", tag: "M · excellent",   cat: "western", status: "available", color: "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&w=300&q=80", measurements: [["chest", "38"], ["shoulder", "15"], ["length", "25"]] },
+  { id: "i4", name: "Embroidered kurta",     price: "₹650",   tag: "S · like new",    cat: "ethnic",  status: "available", color: "https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?auto=format&fit=crop&w=300&q=80", measurements: [["bust", "34"], ["waist", "30"], ["length", "39"]] },
+  { id: "i5", name: "Silk anarkali",         price: "₹900",   tag: "M · good",        cat: "ethnic",  status: "gone",      color: "https://images.unsplash.com/photo-1583391733956-6c78276477e2?auto=format&fit=crop&w=300&q=80", measurements: [["bust", "36"], ["waist", "32"], ["length", "50"]] },
+  { id: "i6", name: "Oversized white shirt", price: "₹600",   tag: "L · excellent",   cat: "western", status: "available", color: "https://images.unsplash.com/photo-1581803118522-7b72a50f7e9f?auto=format&fit=crop&w=300&q=80", measurements: [["chest", "42"], ["shoulder", "18"], ["length", "28"]] },
+  { id: "i7", name: "Y2K cargo pants",       price: "₹1,400", tag: "S/M · like new",  cat: "western", status: "available", color: "https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=300&q=80", measurements: [["waist", "30"], ["rise", "12"], ["inseam", "31"]] },
 ];
 
 function DropLanding({ go, followingSeller, setFollowingSeller }: { go: GoFn; followingSeller: boolean; setFollowingSeller: (v: boolean) => void }) {
@@ -1238,7 +1385,7 @@ function DropLanding({ go, followingSeller, setFollowingSeller }: { go: GoFn; fo
 
   return (
     <Wrap>
-      <div style={{ marginBottom: 8 }}><BackBtn onClick={() => go("feed")} /></div>
+      <div style={{ marginBottom: 0, padding: "12px 16px 8px" }}><BackBtn onClick={() => go("feed")} /></div>
       <Screen>
         <div style={{ padding: "20px 16px 14px", borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
@@ -1257,7 +1404,7 @@ function DropLanding({ go, followingSeller, setFollowingSeller }: { go: GoFn; fo
               cursor: "pointer", fontFamily: "inherit",
             }}>{followingSeller ? "following" : "+ follow"}</button>
           </div>
-          <p style={{ fontSize: 22, fontWeight: 500, margin: "0 0 8px", letterSpacing: "-0.01em" }}>Summer Stories</p>
+          <p style={{ fontSize: 24, fontWeight: 500, margin: "0 0 10px", letterSpacing: "-0.02em" }}>Summer Stories</p>
 
           {/* social proof — moved UP so buyers feel the urgency while shopping */}
           <div style={{ display: "flex", alignItems: "center", gap: 14, fontSize: 12, color: "var(--color-text-secondary)" }}>
@@ -1274,7 +1421,7 @@ function DropLanding({ go, followingSeller, setFollowingSeller }: { go: GoFn; fo
           <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", margin: "8px 0 0" }}>₹600 – ₹1,400 · first come first serve</p>
         </div>
 
-        <div style={{ padding: "0 16px" }}>
+        <div style={{ padding: 0 }}>
           <Tabs<"all" | "available" | "western" | "ethnic">
             items={[
               { id: "all", label: "all", count: ITEMS.length },
@@ -1292,7 +1439,34 @@ function DropLanding({ go, followingSeller, setFollowingSeller }: { go: GoFn; fo
             const gone = it.status === "gone";
             return (
               <div key={it.id} onClick={() => !gone && go("item")} style={{ background: "var(--color-background-primary)", cursor: gone ? "default" : "pointer" }}>
-                <div style={{ aspectRatio: "3/4", background: it.color, position: "relative" }}>
+                <div style={{ aspectRatio: "3/4", backgroundImage: `url(${it.color})`, backgroundSize: "cover", backgroundPosition: "center", backgroundColor: "var(--color-background-tertiary)", position: "relative" }}>
+                  {!gone && (
+                    <span style={{
+                      position: "absolute", top: 8, right: 8,
+                      padding: "4px 7px", borderRadius: 6,
+                      background: "rgba(255,255,255,0.92)",
+                      color: "var(--color-text-danger)",
+                      fontSize: 10, fontWeight: 600, lineHeight: 1,
+                      boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
+                    }}>2 eyeing</span>
+                  )}
+                  {!gone && (
+                    <div style={{
+                      position: "absolute", right: 0, bottom: 0,
+                      width: 38,
+                      display: "flex", flexDirection: "column", gap: 7,
+                      padding: "9px 5px 10px",
+                      background: "rgba(0,0,0,0.52)",
+                      textAlign: "right",
+                    }}>
+                      {it.measurements.map(([label, value]) => (
+                        <div key={label}>
+                          <p style={{ fontSize: 7, color: "rgba(255,255,255,0.72)", margin: "0 0 3px", lineHeight: 1 }}>{label}</p>
+                          <p style={{ fontSize: 11, color: "white", fontWeight: 700, margin: 0, lineHeight: 1 }}>{value}"</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   {gone && (
                     <div style={{ position: "absolute", inset: 0, background: "rgba(255,255,255,0.7)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                       <span style={{ fontSize: 12, fontWeight: 500, color: "var(--color-text-secondary)", background: "var(--color-background-primary)", border: "0.5px solid var(--color-border-secondary)", padding: "4px 10px", borderRadius: 6 }}>claimed</span>
@@ -1314,8 +1488,13 @@ function DropLanding({ go, followingSeller, setFollowingSeller }: { go: GoFn; fo
 }
 
 // ============ BUYER 3 — ITEM DETAIL ============
-function ItemDetail({ go, startClaim }: { go: GoFn; startClaim: (item: { name: string; price: string; size: string }) => void }) {
-  const colors = ["#B4B2A9", "#888780", "#5F5E5A", "#D3D1C7"];
+function ItemDetail({ go, startClaim }: { go: GoFn; startClaim: (item: Omit<ClaimedItem, "deadline">) => void }) {
+  const colors = [
+    "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=400&q=80",
+    "https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&w=400&q=80",
+    "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=400&q=80",
+    "https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&w=400&q=80",
+  ];
   const [photo, setPhoto] = useState(0);
   const [claimed, setClaimed] = useState(false);
 
@@ -1326,14 +1505,14 @@ function ItemDetail({ go, startClaim }: { go: GoFn; startClaim: (item: { name: s
       <Screen>
         <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "14px 16px" }}>
           <BackBtn onClick={() => go("drop")} />
-          <div style={{ flex: 1 }}>
+          <button onClick={() => go("sellerStore")} style={{ flex: 1, background: "none", border: "none", padding: 0, textAlign: "left", cursor: "pointer", fontFamily: "inherit" }}>
             <p style={{ fontSize: 13, fontWeight: 500, margin: 0 }}>jhaazi_picks</p>
             <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", margin: 0 }}>Summer Stories drop</p>
-          </div>
+          </button>
           <span style={{ fontSize: 10, padding: "3px 8px", borderRadius: 20, background: "var(--color-background-danger)", color: "var(--color-text-danger)", fontWeight: 500 }}>live</span>
         </div>
 
-        <div style={{ position: "relative", aspectRatio: "4/5", background: colors[photo] }}>
+        <div style={{ position: "relative", aspectRatio: "4/5", backgroundImage: `url(${colors[photo]})`, backgroundSize: "cover", backgroundPosition: "center", backgroundColor: "var(--color-background-tertiary)" }}>
           <div style={{ position: "absolute", bottom: 12, left: "50%", transform: "translateX(-50%)", display: "flex", gap: 5 }}>
             {colors.map((_, i) => (
               <div key={i} onClick={() => setPhoto(i)} style={{ width: 5, height: 5, borderRadius: "50%", background: i === photo ? "white" : "rgba(255,255,255,0.5)", cursor: "pointer" }} />
@@ -1342,9 +1521,12 @@ function ItemDetail({ go, startClaim }: { go: GoFn; startClaim: (item: { name: s
         </div>
 
         <div style={{ display: "flex", gap: 6, padding: "10px 16px", borderBottom: "0.5px solid var(--color-border-tertiary)", overflowX: "auto" }}>
-          {colors.map((c, i) => (
+          {colors.map((src, i) => (
             <div key={i} onClick={() => setPhoto(i)} style={{
-              width: 52, height: 52, borderRadius: 6, background: c, flexShrink: 0, cursor: "pointer",
+              width: 52, height: 52, borderRadius: 6,
+              backgroundImage: `url(${src})`, backgroundSize: "cover", backgroundPosition: "center",
+              backgroundColor: "var(--color-background-tertiary)",
+              flexShrink: 0, cursor: "pointer",
               border: "1.5px solid " + (i === photo ? "var(--color-text-primary)" : "transparent"),
             }} />
           ))}
@@ -1591,6 +1773,18 @@ function Booking({ go, claim, signedIn, onDone }: { go: GoFn; claim: ClaimedItem
 
         {step === 2 && (
           <div style={{ textAlign: "center", padding: "48px 24px" }}>
+            <div style={{ marginBottom: 16 }}><label style={labelStyle}>delivery address</label><input placeholder="flat / house no., building" style={fieldStyle} /></div>
+            <div style={{ marginBottom: 16 }}><input placeholder="area, street, locality" style={fieldStyle} /></div>
+            <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
+              <div style={{ flex: 1 }}><label style={labelStyle}>city</label><input placeholder="Mumbai" style={fieldStyle} /></div>
+              <div style={{ flex: 1 }}><label style={labelStyle}>pincode</label><input placeholder="400001" maxLength={6} style={fieldStyle} /></div>
+            </div>
+            <button onClick={() => setStep(3)} style={{ width: "100%", padding: 13, borderRadius: 8, fontSize: 15, fontWeight: 500, border: "none", background: "var(--color-text-primary)", color: "var(--color-background-primary)", cursor: "pointer", fontFamily: "inherit" }}>confirm booking</button>
+          </div>
+        )}
+
+        {step === 3 && (
+          <div style={{ textAlign: "center", padding: "64px 24px" }}>
             {!done
               ? <div className="j-spin" style={{ width: 40, height: 40, border: "2px solid var(--color-border-tertiary)", borderTopColor: "var(--color-text-primary)", borderRadius: "50%", margin: "0 auto 20px" }} />
               : <div style={{ width: 40, height: 40, margin: "0 auto 20px", display: "flex", alignItems: "center", justifyContent: "center" }}><Check w={32} /></div>}
@@ -1613,9 +1807,9 @@ function FollowSeller({ go, setFollowingSeller }: { go: GoFn; setFollowingSeller
   return (
     <Wrap>
       <Screen>
-        <div style={{ padding: "32px 24px 24px", textAlign: "center", borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
-          <div style={{ width: 56, height: 56, borderRadius: "50%", background: "var(--color-background-success)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}><Check /></div>
-          <p style={{ fontSize: 18, fontWeight: 500, margin: "0 0 4px" }}>you got it</p>
+        <div style={{ padding: "40px 24px 28px", textAlign: "center", borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
+          <div style={{ width: 56, height: 56, borderRadius: "50%", background: "var(--color-background-success)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 18px" }}><Check /></div>
+          <p style={{ fontSize: 20, fontWeight: 500, margin: "0 0 5px", letterSpacing: "-0.01em" }}>you got it</p>
           <p style={{ fontSize: 13, color: "var(--color-text-secondary)", margin: 0 }}>booking confirmed · Priya M.</p>
         </div>
 
@@ -1731,7 +1925,7 @@ function SellerStore({ go, followingSeller, setFollowingSeller }: { go: GoFn; fo
               { v: "1.8d", l: "avg ship time" },
               { v: avg + "★", l: reviews.length + " reviews" },
             ].map(s => (
-              <div key={s.l} style={{ background: "var(--color-background-secondary)", borderRadius: 10, padding: "10px 8px", textAlign: "center" }}>
+              <div key={s.l} style={{ padding: "6px 4px", textAlign: "center" }}>
                 <p style={{ fontSize: 14, fontWeight: 500, margin: "0 0 2px" }}>{s.v}</p>
                 <p style={{ fontSize: 10, color: "var(--color-text-tertiary)", margin: 0, lineHeight: 1.2 }}>{s.l}</p>
               </div>
