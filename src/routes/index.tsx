@@ -121,6 +121,8 @@ function App() {
         {screen === "dropPreview" && <DropPreview go={go} />}
         {screen === "shareDrop" && <ShareDrop go={go} />}
         {screen === "dashboard" && <SellerDashboard go={go} />}
+        {screen === "sellerOrders" && <SellerOrders go={go} />}
+        {screen === "sellerTracking" && <SellerTracking go={go} ownerView />}
       </div>
 
       {menuOpen && <SideMenu go={go} onClose={() => setMenuOpen(false)} session={session} setRole={setRole} />}
