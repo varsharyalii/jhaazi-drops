@@ -2189,6 +2189,12 @@ function SellerStore({ go, followingSeller, setFollowingSeller }: { go: GoFn; fo
               </div>
             ))}
           </div>
+          <button onClick={() => go("sellerTracking")} style={{
+            marginTop: 12, width: "100%", padding: 10, borderRadius: 8,
+            border: "0.5px solid var(--color-border-secondary)", background: "none",
+            fontSize: 12, color: "var(--color-text-secondary)", cursor: "pointer", fontFamily: "inherit",
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+          }}>📦 view shipments & tracking</button>
         </div>
 
         {/* tabs */}
