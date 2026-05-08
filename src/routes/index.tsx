@@ -2024,6 +2024,7 @@ function Booking({ go, claim, signedIn, onDone }: { go: GoFn; claim: ClaimedItem
               <div style={{ flex: 1 }}><label style={labelStyle}>city</label><input placeholder="Mumbai" style={fieldStyle} /></div>
               <div style={{ flex: 1 }}><label style={labelStyle}>pincode</label><input placeholder="400001" maxLength={6} style={fieldStyle} /></div>
             </div>
+            <CashfreeBadge />
             <button onClick={() => setStep(2)} style={{ width: "100%", padding: 13, borderRadius: 8, fontSize: 15, fontWeight: 500, border: "none", background: "var(--color-text-primary)", color: "var(--color-background-primary)", cursor: "pointer", fontFamily: "inherit" }}>pay {claim?.price ?? "₹850"} via UPI</button>
           </div>
         )}
