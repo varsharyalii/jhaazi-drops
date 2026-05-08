@@ -8,7 +8,8 @@ type Screen =
   | "landing"
   | "feed" | "drop" | "item" | "claimHold" | "signup" | "booking" | "missed" | "follow" | "myfollows" | "sellerStore"
   | "sellerApply" | "sellerApplyPending" | "sellerApplyApproved"
-  | "sellerProfile" | "createDrop" | "addItem" | "dropPreview" | "shareDrop" | "dashboard";
+  | "sellerProfile" | "createDrop" | "addItem" | "dropPreview" | "shareDrop" | "dashboard"
+  | "sellerOrders" | "sellerTracking";
 
 type Role = "guest" | "buyer" | "seller";
 type Session = { role: Role; name?: string; sellerApproved?: boolean };
@@ -75,11 +76,13 @@ function App() {
   ];
   const sellerScreens: { id: Screen; label: string }[] = [
     { id: "dashboard", label: "1 · seller dashboard (home)" },
-    { id: "sellerProfile", label: "2 · store setup" },
-    { id: "createDrop", label: "3 · create drop" },
-    { id: "addItem", label: "4 · add item" },
-    { id: "dropPreview", label: "5 · drop preview" },
-    { id: "shareDrop", label: "6 · share drop link" },
+    { id: "sellerOrders", label: "2 · orders & shipping" },
+    { id: "sellerTracking", label: "3 · tracking ids" },
+    { id: "sellerProfile", label: "4 · store setup" },
+    { id: "createDrop", label: "5 · create drop" },
+    { id: "addItem", label: "6 · add item" },
+    { id: "dropPreview", label: "7 · drop preview" },
+    { id: "shareDrop", label: "8 · share drop link" },
   ];
   const buyerScreens: { id: Screen; label: string }[] = [
     { id: "feed", label: "1 · marketplace feed" },
@@ -120,6 +123,8 @@ function App() {
         {screen === "dropPreview" && <DropPreview go={go} />}
         {screen === "shareDrop" && <ShareDrop go={go} />}
         {screen === "dashboard" && <SellerDashboard go={go} />}
+        {screen === "sellerOrders" && <SellerOrders go={go} />}
+        {screen === "sellerTracking" && <SellerTracking go={go} ownerView={session.role === "seller"} />}
       </div>
 
       {menuOpen && <SideMenu go={go} onClose={() => setMenuOpen(false)} session={session} setRole={setRole} />}
@@ -319,8 +324,8 @@ function SideMenu({ go, onClose, session, setRole }: { go: GoFn; onClose: () => 
             <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", letterSpacing: "0.06em", margin: "0 0 4px" }}>your store</p>
             {item("dashboard", "live drop, orders, followers", () => go("dashboard"))}
             {item("create new drop", "set up your next drop", () => go("createDrop"))}
-            {item("my drops", "history of past drops", () => go("dashboard"))}
-            {item("orders to ship", "buyers waiting on you", () => go("dashboard"))}
+            {item("orders & shipping", "buyer addresses & contact", () => go("sellerOrders"))}
+            {item("tracking ids", "upload after shipment, share with followers", () => go("sellerTracking"))}
             {item("my profile", "edit your storefront", () => go("sellerProfile"))}
             <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", letterSpacing: "0.06em", margin: "20px 0 4px" }}>account</p>
             {item("switch to buyer view", "browse drops as a buyer", () => setRole("buyer"))}
@@ -2019,6 +2024,7 @@ function Booking({ go, claim, signedIn, onDone }: { go: GoFn; claim: ClaimedItem
               <div style={{ flex: 1 }}><label style={labelStyle}>city</label><input placeholder="Mumbai" style={fieldStyle} /></div>
               <div style={{ flex: 1 }}><label style={labelStyle}>pincode</label><input placeholder="400001" maxLength={6} style={fieldStyle} /></div>
             </div>
+            <CashfreeBadge />
             <button onClick={() => setStep(2)} style={{ width: "100%", padding: 13, borderRadius: 8, fontSize: 15, fontWeight: 500, border: "none", background: "var(--color-text-primary)", color: "var(--color-background-primary)", cursor: "pointer", fontFamily: "inherit" }}>pay {claim?.price ?? "₹850"} via UPI</button>
           </div>
         )}
@@ -2183,6 +2189,12 @@ function SellerStore({ go, followingSeller, setFollowingSeller }: { go: GoFn; fo
               </div>
             ))}
           </div>
+          <button onClick={() => go("sellerTracking")} style={{
+            marginTop: 12, width: "100%", padding: 10, borderRadius: 8,
+            border: "0.5px solid var(--color-border-secondary)", background: "none",
+            fontSize: 12, color: "var(--color-text-secondary)", cursor: "pointer", fontFamily: "inherit",
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+          }}>📦 view shipments & tracking</button>
         </div>
 
         {/* tabs */}
@@ -2264,6 +2276,262 @@ function SellerStore({ go, followingSeller, setFollowingSeller }: { go: GoFn; fo
             )}
           </div>
         )}
+      </Screen>
+    </Wrap>
+  );
+}
+
+// ============ CASHFREE PAYMENT BADGE ============
+function CashfreeBadge() {
+  const methods = ["UPI", "Cards", "Wallets", "Netbanking"];
+  return (
+    <div style={{
+      border: "0.5px solid var(--color-border-secondary)", borderRadius: 8,
+      padding: "10px 12px", marginBottom: 14, background: "var(--color-background-secondary)",
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+        <div style={{
+          width: 22, height: 22, borderRadius: 5, background: "#6933FF",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          color: "#fff", fontSize: 11, fontWeight: 700, fontFamily: "inherit",
+        }}>cf</div>
+        <span style={{ fontSize: 12, fontWeight: 500 }}>secure payments</span>
+        <span style={{ fontSize: 10, color: "var(--color-text-tertiary)", marginLeft: "auto" }}>powered by Cashfree</span>
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+        {methods.map(m => (
+          <span key={m} style={{
+            fontSize: 10, padding: "3px 8px", borderRadius: 4,
+            background: "var(--color-background-primary)",
+            border: "0.5px solid var(--color-border-tertiary)",
+            color: "var(--color-text-secondary)", fontWeight: 500,
+          }}>{m}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ============ SELLER · ORDERS & SHIPPING ============
+type SellerOrder = {
+  id: string; buyer: string; phone: string; address: string; city: string; pincode: string;
+  item: string; price: string; size: string; status: "to ship" | "shipped" | "delivered";
+  placedAt: string; tracking?: string; courier?: string;
+};
+
+const SELLER_ORDERS: SellerOrder[] = [
+  { id: "JZ-2041", buyer: "Priya Mehta", phone: "+91 98201 44120", address: "402, Sea Breeze, Carter Rd", city: "Mumbai", pincode: "400050", item: "Floral midi dress", price: "₹850", size: "S", status: "to ship", placedAt: "2h ago" },
+  { id: "JZ-2040", buyer: "Sneha Rao", phone: "+91 99300 17745", address: "B-12, Hiranandani Powai", city: "Mumbai", pincode: "400076", item: "Vintage blazer", price: "₹1,100", size: "M", status: "to ship", placedAt: "4h ago" },
+  { id: "JZ-2039", buyer: "Ananya Kapoor", phone: "+91 98765 43210", address: "5/A Greater Kailash II", city: "Delhi", pincode: "110048", item: "Y2K cargo pants", price: "₹1,400", size: "M", status: "shipped", placedAt: "yesterday", tracking: "DTDC9920481234", courier: "DTDC" },
+  { id: "JZ-2038", buyer: "Riya Verma", phone: "+91 90040 88123", address: "12, Koramangala 4th Blk", city: "Bengaluru", pincode: "560034", item: "Embroidered kurta", price: "₹650", size: "S", status: "delivered", placedAt: "3 days ago", tracking: "BD884412009IN", courier: "Bluedart" },
+];
+
+function SellerOrders({ go }: { go: GoFn }) {
+  const [filter, setFilter] = useState<"all" | "to ship" | "shipped" | "delivered">("all");
+  const [revealed, setRevealed] = useState<Record<string, boolean>>({});
+  const orders = SELLER_ORDERS.filter(o => filter === "all" ? true : o.status === filter);
+
+  const copy = (text: string) => { try { navigator.clipboard?.writeText(text); } catch {} };
+
+  return (
+    <Wrap>
+      <div style={{ marginBottom: 8 }}><BackBtn onClick={() => go("dashboard")} /></div>
+      <Screen>
+        <div style={{ padding: "20px 18px 14px", borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
+          <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", letterSpacing: "0.06em", margin: "0 0 6px" }}>seller · orders</p>
+          <p style={{ fontSize: 20, fontWeight: 500, margin: "0 0 4px" }}>orders & shipping</p>
+          <p style={{ fontSize: 12, color: "var(--color-text-secondary)", margin: 0 }}>buyer addresses & contact for self-shipped orders.</p>
+        </div>
+
+        <div style={{ display: "flex", gap: 6, padding: "12px 16px", borderBottom: "0.5px solid var(--color-border-tertiary)", overflowX: "auto" }}>
+          {(["all", "to ship", "shipped", "delivered"] as const).map(f => {
+            const active = filter === f;
+            return (
+              <button key={f} onClick={() => setFilter(f)} style={{
+                padding: "6px 12px", borderRadius: 999, fontSize: 12, fontFamily: "inherit", cursor: "pointer", whiteSpace: "nowrap",
+                border: "0.5px solid " + (active ? "var(--color-text-primary)" : "var(--color-border-secondary)"),
+                background: active ? "var(--color-text-primary)" : "var(--color-background-primary)",
+                color: active ? "var(--color-background-primary)" : "var(--color-text-secondary)", fontWeight: active ? 500 : 400,
+              }}>{f}</button>
+            );
+          })}
+        </div>
+
+        <div>
+          {orders.map(o => {
+            const isRevealed = !!revealed[o.id];
+            const statusColor = o.status === "to ship" ? { bg: "var(--color-background-warning)", fg: "var(--color-text-warning)" }
+              : o.status === "shipped" ? { bg: "#E8F4FF", fg: "#1A3A5C" }
+              : { bg: "var(--color-background-success)", fg: "var(--color-text-success)" };
+            return (
+              <div key={o.id} style={{ padding: "14px 16px", borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: 13, fontWeight: 500, margin: "0 0 2px" }}>{o.buyer}</p>
+                    <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", margin: 0 }}>#{o.id} · {o.placedAt}</p>
+                  </div>
+                  <span style={{ fontSize: 10, padding: "3px 8px", borderRadius: 20, fontWeight: 500, background: statusColor.bg, color: statusColor.fg }}>{o.status}</span>
+                </div>
+
+                <div style={{ background: "var(--color-background-secondary)", borderRadius: 8, padding: "10px 12px", marginBottom: 8 }}>
+                  <p style={{ fontSize: 12, fontWeight: 500, margin: "0 0 2px" }}>{o.item} · {o.price}</p>
+                  <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", margin: 0 }}>size {o.size}</p>
+                </div>
+
+                {isRevealed ? (
+                  <div style={{ fontSize: 12, color: "var(--color-text-secondary)", lineHeight: 1.5 }}>
+                    <p style={{ margin: "0 0 4px" }}>
+                      <span style={{ color: "var(--color-text-tertiary)" }}>ship to · </span>{o.address}, {o.city} – {o.pincode}
+                    </p>
+                    <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                      <span style={{ color: "var(--color-text-tertiary)" }}>phone ·</span>
+                      <span style={{ fontVariantNumeric: "tabular-nums" }}>{o.phone}</span>
+                      <button onClick={() => copy(o.phone)} style={{ fontSize: 11, padding: "3px 8px", borderRadius: 6, border: "0.5px solid var(--color-border-secondary)", background: "none", cursor: "pointer", fontFamily: "inherit", color: "var(--color-text-secondary)" }}>copy</button>
+                      <a href={`tel:${o.phone.replace(/\s/g, "")}`} style={{ fontSize: 11, padding: "3px 8px", borderRadius: 6, border: "0.5px solid var(--color-border-secondary)", textDecoration: "none", color: "var(--color-text-secondary)" }}>call</a>
+                    </div>
+                    {o.tracking && (
+                      <p style={{ margin: "6px 0 0", fontSize: 11, color: "var(--color-text-tertiary)" }}>
+                        tracking · <span style={{ color: "var(--color-text-secondary)", fontWeight: 500 }}>{o.courier} {o.tracking}</span>
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <button onClick={() => setRevealed(r => ({ ...r, [o.id]: true }))} style={{
+                    fontSize: 12, padding: "6px 10px", borderRadius: 6, border: "0.5px solid var(--color-border-secondary)",
+                    background: "none", cursor: "pointer", fontFamily: "inherit", color: "var(--color-text-secondary)",
+                  }}>reveal address & phone</button>
+                )}
+
+                {o.status === "to ship" && (
+                  <button onClick={() => go("sellerTracking")} style={{
+                    marginTop: 10, width: "100%", padding: 10, borderRadius: 8, fontSize: 13, fontWeight: 500,
+                    border: "none", background: "var(--color-text-primary)", color: "var(--color-background-primary)",
+                    cursor: "pointer", fontFamily: "inherit",
+                  }}>add tracking id</button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </Screen>
+    </Wrap>
+  );
+}
+
+// ============ SELLER · TRACKING IDS (also used as public view) ============
+type TrackingEntry = { orderId: string; buyer: string; item: string; courier: string; tracking: string; shippedAt: string };
+
+const INITIAL_TRACKING: TrackingEntry[] = [
+  { orderId: "JZ-2039", buyer: "Ananya K.", item: "Y2K cargo pants", courier: "DTDC", tracking: "DTDC9920481234", shippedAt: "yesterday" },
+  { orderId: "JZ-2038", buyer: "Riya V.", item: "Embroidered kurta", courier: "Bluedart", tracking: "BD884412009IN", shippedAt: "3 days ago" },
+];
+
+function SellerTracking({ go, ownerView = false }: { go: GoFn; ownerView?: boolean }) {
+  const [entries, setEntries] = useState<TrackingEntry[]>(INITIAL_TRACKING);
+  const [orderId, setOrderId] = useState("");
+  const [courier, setCourier] = useState("");
+  const [tracking, setTracking] = useState("");
+  const [pendingBuyer, setPendingBuyer] = useState("Priya M.");
+  const [pendingItem, setPendingItem] = useState("Floral midi dress");
+
+  // demo: pull "to ship" orders for quick selection
+  const toShip = SELLER_ORDERS.filter(o => o.status === "to ship");
+
+  const submit = () => {
+    if (!orderId.trim() || !courier.trim() || tracking.trim().length < 6) return;
+    setEntries([
+      { orderId: orderId.trim(), buyer: pendingBuyer, item: pendingItem, courier: courier.trim(), tracking: tracking.trim(), shippedAt: "just now" },
+      ...entries,
+    ]);
+    setOrderId(""); setCourier(""); setTracking("");
+  };
+
+  const couriers = ["DTDC", "Bluedart", "Delhivery", "India Post", "Ekart", "XpressBees"];
+
+  return (
+    <Wrap>
+      <div style={{ marginBottom: 8 }}><BackBtn onClick={() => go(ownerView ? "dashboard" : "sellerStore")} /></div>
+      <Screen>
+        <div style={{ padding: "20px 18px 14px", borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
+          <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", letterSpacing: "0.06em", margin: "0 0 6px" }}>{ownerView ? "seller · tracking" : "shipments"}</p>
+          <p style={{ fontSize: 20, fontWeight: 500, margin: "0 0 4px" }}>{ownerView ? "tracking ids" : "shipped orders"}</p>
+          <p style={{ fontSize: 12, color: "var(--color-text-secondary)", margin: 0, lineHeight: 1.5 }}>
+            {ownerView
+              ? "after you ship, drop the tracking id here. it shows up on your profile so followers can track too."
+              : "every shipment from this seller lives here. tap a tracking id to follow your package."}
+          </p>
+        </div>
+
+        {ownerView && (
+          <div style={{ padding: "16px 16px", borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
+            <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", letterSpacing: "0.06em", margin: "0 0 8px" }}>add tracking id</p>
+
+            <label style={labelStyle}>order</label>
+            <select
+              value={orderId}
+              onChange={e => {
+                const id = e.target.value;
+                setOrderId(id);
+                const o = toShip.find(x => x.id === id);
+                if (o) { setPendingBuyer(o.buyer.split(" ")[0] + " " + (o.buyer.split(" ")[1]?.[0] ?? "") + "."); setPendingItem(o.item); }
+              }}
+              style={{ ...fieldStyle, marginBottom: 12 }}
+            >
+              <option value="">select an order…</option>
+              {toShip.map(o => <option key={o.id} value={o.id}>#{o.id} · {o.buyer} · {o.item}</option>)}
+            </select>
+
+            <label style={labelStyle}>courier</label>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
+              {couriers.map(c => (
+                <button key={c} onClick={() => setCourier(c)} style={{
+                  fontSize: 12, padding: "6px 10px", borderRadius: 999, fontFamily: "inherit", cursor: "pointer",
+                  border: "0.5px solid " + (courier === c ? "var(--color-text-primary)" : "var(--color-border-secondary)"),
+                  background: courier === c ? "var(--color-text-primary)" : "var(--color-background-primary)",
+                  color: courier === c ? "var(--color-background-primary)" : "var(--color-text-secondary)",
+                  fontWeight: courier === c ? 500 : 400,
+                }}>{c}</button>
+              ))}
+            </div>
+
+            <label style={labelStyle}>tracking number</label>
+            <input value={tracking} onChange={e => setTracking(e.target.value.toUpperCase())} placeholder="e.g. DTDC9920481234" style={{ ...fieldStyle, marginBottom: 12, fontVariantNumeric: "tabular-nums" }} />
+
+            <button onClick={submit} disabled={!orderId || !courier || tracking.length < 6} style={{
+              width: "100%", padding: 12, borderRadius: 8, fontSize: 14, fontWeight: 500, fontFamily: "inherit",
+              border: "none", cursor: orderId && courier && tracking.length >= 6 ? "pointer" : "default",
+              background: orderId && courier && tracking.length >= 6 ? "var(--color-text-primary)" : "var(--color-background-tertiary)",
+              color: orderId && courier && tracking.length >= 6 ? "var(--color-background-primary)" : "var(--color-text-tertiary)",
+            }}>mark as shipped</button>
+            <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", margin: "10px 0 0", lineHeight: 1.5 }}>
+              the buyer gets notified, and this id appears on your public store under <span style={{ color: "var(--color-text-secondary)", fontWeight: 500 }}>shipments</span>.
+            </p>
+          </div>
+        )}
+
+        <div style={{ padding: "14px 16px 8px", display: "flex", justifyContent: "space-between" }}>
+          <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", letterSpacing: "0.06em", margin: 0 }}>{ownerView ? "shipped" : "all shipments"}</p>
+          <span style={{ fontSize: 11, color: "var(--color-text-secondary)" }}>{entries.length} total</span>
+        </div>
+        <div>
+          {entries.map(e => (
+            <div key={e.tracking} style={{ padding: "12px 16px", borderBottom: "0.5px solid var(--color-border-tertiary)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                <p style={{ fontSize: 13, fontWeight: 500, margin: 0, flex: 1 }}>{e.item}</p>
+                <span style={{ fontSize: 10, color: "var(--color-text-tertiary)" }}>{e.shippedAt}</span>
+              </div>
+              <p style={{ fontSize: 11, color: "var(--color-text-tertiary)", margin: "0 0 6px" }}>#{e.orderId} · {e.buyer}</p>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                <span style={{ fontSize: 10, padding: "3px 8px", borderRadius: 4, background: "var(--color-background-secondary)", color: "var(--color-text-secondary)", fontWeight: 500 }}>{e.courier}</span>
+                <span style={{ fontSize: 12, fontFamily: "inherit", fontVariantNumeric: "tabular-nums", color: "var(--color-text-primary)", fontWeight: 500 }}>{e.tracking}</span>
+                <button onClick={() => { try { navigator.clipboard?.writeText(e.tracking); } catch {} }} style={{ fontSize: 11, padding: "3px 8px", borderRadius: 6, border: "0.5px solid var(--color-border-secondary)", background: "none", cursor: "pointer", fontFamily: "inherit", color: "var(--color-text-secondary)", marginLeft: "auto" }}>copy</button>
+              </div>
+            </div>
+          ))}
+          {entries.length === 0 && (
+            <p style={{ textAlign: "center", color: "var(--color-text-tertiary)", fontSize: 12, padding: "24px 0" }}>no shipments yet.</p>
+          )}
+        </div>
       </Screen>
     </Wrap>
   );
