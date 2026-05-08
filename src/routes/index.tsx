@@ -8,7 +8,8 @@ type Screen =
   | "landing"
   | "feed" | "drop" | "item" | "claimHold" | "signup" | "booking" | "missed" | "follow" | "myfollows" | "sellerStore"
   | "sellerApply" | "sellerApplyPending" | "sellerApplyApproved"
-  | "sellerProfile" | "createDrop" | "addItem" | "dropPreview" | "shareDrop" | "dashboard";
+  | "sellerProfile" | "createDrop" | "addItem" | "dropPreview" | "shareDrop" | "dashboard"
+  | "sellerOrders" | "sellerTracking";
 
 type Role = "guest" | "buyer" | "seller";
 type Session = { role: Role; name?: string; sellerApproved?: boolean };
